@@ -565,7 +565,7 @@ function App() {
   const pomodoroState: PomodoroState = pomodoro.state;
 
   return (
-    <div className={`app ${settings.theme === 'dark' ? 'dark' : settings.theme === 'light' ? 'light' : ''}`}>
+    <div className={`app ${settings.theme === 'dark' ? 'dark' : settings.theme === 'light' ? 'light' : ''}${settings.colorScheme && settings.colorScheme !== 'nord' ? ` scheme-${settings.colorScheme}` : ''}`}>
       <header className="app-header">
         <div className="app-title-group">
           <h1 className="app-title">
@@ -658,6 +658,19 @@ function App() {
               <option value="system">System</option>
               <option value="light">Light</option>
               <option value="dark">Dark</option>
+            </select>
+          </label>
+          <label>
+            Colour scheme:
+            <select value={settings.colorScheme || 'nord'} onChange={e => {
+              const s = { ...settings, colorScheme: e.target.value as AppSettings['colorScheme'] };
+              setSettings(s); debouncedPushSettings(s);
+            }}>
+              <option value="nord">Nord</option>
+              <option value="aurora">Aurora</option>
+              <option value="frost">Frost</option>
+              <option value="evergreen">Evergreen</option>
+              <option value="berry">Berry</option>
             </select>
           </label>
 

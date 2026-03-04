@@ -181,6 +181,7 @@ export function getDemoSettings(): AppSettings {
     use24Hour: true,
     autoAdvance: true,
     theme: 'system',
+    colorScheme: 'nord',
     meetingBufferMinutes: 15,
     enableRecurringTasks: true,
     enableBacklog: true,

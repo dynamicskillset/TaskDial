@@ -58,6 +58,7 @@ export interface AppSettings {
   use24Hour: boolean;
   autoAdvance: boolean;
   theme: 'light' | 'dark' | 'system';
+  colorScheme: 'nord' | 'aurora' | 'frost' | 'evergreen' | 'berry';
   icalUrl?: string;
   meetingBufferMinutes: number; // gap after calendar events, default 15
   enableRecurringTasks: boolean;
@@ -76,6 +77,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   use24Hour: true,
   autoAdvance: true,
   theme: 'system',
+  colorScheme: 'nord',
   meetingBufferMinutes: 15,
   enableRecurringTasks: false,
   enableBacklog: false,
