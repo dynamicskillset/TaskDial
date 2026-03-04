@@ -257,7 +257,7 @@
   border-radius: 6px;
   cursor: pointer;
   background: var(--color-accent);
-  color: var(--color-submit-text);
+  color: var(--color-bg);
   transition: opacity var(--transition-fast);
 }
 

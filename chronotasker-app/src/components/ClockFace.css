@@ -315,7 +315,7 @@ g:focus-visible .clock-face__calendar-arc {
   }
 
   .clock-face__hour-label {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .clock-face__center-time {
@@ -323,7 +323,7 @@ g:focus-visible .clock-face__calendar-arc {
   }
 
   .clock-face__center-date {
-    font-size: 9px;
+    font-size: 11px;
   }
 }
 

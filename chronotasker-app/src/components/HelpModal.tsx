@@ -120,44 +120,56 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
         </div>
 
         <div className="help-modal__body">
+          {onToggleDemoMode && (
+            <div className="help-modal__section help-modal__section--demo">
+              <p>
+                Load sample tasks, calendar events, and backlog items to explore all
+                features without affecting your real data.
+              </p>
+              <button
+                className={`help-modal__demo-btn ${demoMode ? 'help-modal__demo-btn--active' : ''}`}
+                onClick={() => { onToggleDemoMode(); onClose(); }}
+              >
+                {demoMode ? 'Exit demo mode' : 'Try demo mode'}
+              </button>
+            </div>
+          )}
+
+          <div className="help-modal__divider" />
+
           <p className="help-modal__intro">
             ChronoTasker is a visual time-planning tool. Instead of a flat to-do list,
-            you see your day as a clock, with each task shown as a coloured arc. A built-in{' '}
-            <a
-              href="https://en.wikipedia.org/wiki/Pomodoro_Technique"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Pomodoro timer
-            </a>{' '}
-            helps you work in focused bursts.
+            you see your day as a clock — each task is a coloured arc. A built-in
+            Pomodoro timer helps you work in focused bursts.
           </p>
 
           <div className="help-modal__section">
             <h3>The clock face</h3>
             <p>
               The ring shows your scheduled day. Coloured arcs are your tasks; tap one to
-              select it. The red hand tracks the current time. If you connect a calendar
-              feed, those events appear as purple arcs behind your tasks.
+              select it. The hand tracks the current time in your chosen highlight colour.
+              If you connect a calendar feed, those events appear as purple arcs behind
+              your tasks.
             </p>
           </div>
 
           <div className="help-modal__section">
             <h3>Adding and managing tasks</h3>
             <p>
-              Use the form on the right to add a task with a title and duration. You can
-              optionally pin it to a fixed start time. Once added, tasks can be reordered,
-              marked complete, flagged as important, or moved to another day using the
-              calendar icon.
+              Use the form on the right to add a task with a name and duration. You can
+              optionally pin it to a fixed start time. Once added, tasks can be reordered
+              by dragging, marked complete, flagged as important, or moved to another day
+              using the calendar icon. If the task order you have causes overflow, a banner
+              will suggest a reordering that fits.
             </p>
           </div>
 
           <div className="help-modal__section">
             <h3>The Pomodoro timer</h3>
             <p>
-              Select a task, then start the timer. You will work for 25 minutes, take a
-              5-minute break, and repeat. After four cycles, a longer 15-minute break kicks
-              in. All of these durations are adjustable.{' '}
+              Select a task, then start the timer. Work for 25 minutes, take a short break,
+              and repeat. After four cycles a longer break kicks in. Enable it and adjust
+              durations in Settings under <strong>Pomodoro</strong>.{' '}
               <a
                 href="https://francescocirillo.com/products/the-pomodoro-technique"
                 target="_blank"
@@ -171,10 +183,11 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
           <div className="help-modal__section">
             <h3>Settings</h3>
             <p>
-              Tap the <strong>&#9881; gear icon</strong> in the top-right corner. From there you
-              can change Pomodoro durations, set your working hours, choose a light or dark
-              theme, toggle 12/24-hour time, and connect an iCal calendar feed. If a calendar
-              feed is connected, you can also set a buffer (in minutes) after each meeting.
+              Click the <strong>&#9881; gear icon</strong> (top right). The panel appears
+              beneath it, aligned to the task list. Toggle switches control boolean options;
+              use the +/− steppers for durations. The coloured dots let you pick a highlight
+              colour. Turn on <strong>Advanced mode</strong> to unlock calendar integration,
+              recurring tasks, fixed-time scheduling, and the Pomodoro timer.
             </p>
           </div>
 
@@ -185,64 +198,63 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
 
             <FaqItem question="Does it work offline?">
               <p>
-                Yes. All tasks are saved to your browser's local storage first, then synced
-                to the server when a connection is available. The status pill in the header
-                shows whether you are online or offline.
+                Yes. Tasks are saved to your browser first, then synced to the server when
+                online. The status pill in the header shows the current state.
               </p>
             </FaqItem>
 
             <FaqItem question="How do I connect my calendar?">
               <p>
-                Open Settings and paste an iCal feed URL (the kind that ends
-                in <code>.ics</code> or comes from Google Calendar / Proton Calendar
-                sharing). Press <strong>Load</strong> and your events will appear on the clock.
-                The feed refreshes every five minutes.
+                Open Settings, turn on Advanced mode, then paste an iCal feed URL (ending
+                in <code>.ics</code>, from Google Calendar or Proton Calendar sharing) into
+                the Calendar feed field and press <strong>Load</strong>. Events appear on
+                the clock as purple arcs and the feed refreshes every five minutes.
               </p>
             </FaqItem>
 
             <FaqItem question="What does 'auto-advance' do?">
               <p>
-                When enabled, flexible tasks start from the current time rather than the
-                beginning of the day. This keeps your schedule looking forward, not
-                backward. You can turn it off in Settings if you prefer a static layout.
+                When on, flexible tasks are scheduled from the current time rather than the
+                day start — so your plan always looks forward. Turn it off in Settings if
+                you prefer tasks to always start from your day's start hour.
               </p>
             </FaqItem>
 
             <FaqItem question="Can I move a task to a different day?">
               <p>
-                Yes. Hover over (or tap) a task and click the calendar icon. You can send it
-                to tomorrow with one click, or pick any date. The task will disappear from
-                the current day and appear when you browse to that date.
+                Yes. Hover over (or tap) a task and click the calendar icon. Send it to
+                tomorrow with one click, or pick any date. Use the arrow buttons in the
+                date bar to browse days; the <strong>↵ Today</strong> button returns you
+                to the current day.
               </p>
             </FaqItem>
 
             <FaqItem question="What does the meeting buffer do?">
               <p>
-                When a calendar feed is connected, the scheduler leaves a gap after each
-                meeting before placing the next task. The default is 15 minutes; you can
-                change it (or set it to 0) in Settings.
+                With a calendar feed connected, the scheduler adds a gap after each meeting
+                before placing the next flexible task. Adjust the duration (in minutes)
+                with the +/− stepper in Settings, or set it to 0 to disable.
+              </p>
+            </FaqItem>
+
+            <FaqItem question="Does ChronoTasker read my calendar data?">
+              <p>
+                Your calendar feed is fetched directly from your browser — ChronoTasker
+                never stores or transmits calendar data to the server. Events are only
+                held in memory while the app is open and are not saved alongside your
+                tasks.
+              </p>
+            </FaqItem>
+
+            <FaqItem question="What's the backlog?">
+              <p>
+                The backlog holds tasks that aren't assigned to a specific day. Add
+                something to the backlog when you know you want to do it eventually but
+                haven't decided when. You can move backlog items to any day using the
+                calendar icon, or drag them directly into the task list.
               </p>
             </FaqItem>
           </div>
-
-          {onToggleDemoMode && (
-            <>
-              <div className="help-modal__divider" />
-              <div className="help-modal__section">
-                <h3>Try it out</h3>
-                <p>
-                  Load sample tasks, calendar events, and backlog items to explore all features
-                  without affecting your real data.
-                </p>
-                <button
-                  className={`help-modal__demo-btn ${demoMode ? 'help-modal__demo-btn--active' : ''}`}
-                  onClick={() => { onToggleDemoMode(); onClose(); }}
-                >
-                  {demoMode ? 'Exit demo mode' : 'Try demo mode'}
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>

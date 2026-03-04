@@ -866,7 +866,7 @@ function App() {
         </button>
         {date !== todayString() && (
           <button onClick={goToday} className="today-btn" title="Go to today">
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5H1M4.5 2L1 5.5L4.5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10 2 L10 8 L3 8 M5.5 5.5 L3 8 L5.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Today
           </button>
         )}
