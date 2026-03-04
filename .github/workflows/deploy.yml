@@ -30,11 +30,13 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.VPS_SSH_KEY }}
+          name: id_ed25519
           known_hosts: unnecessary
           config: |
             Host vps
               HostName ${{ secrets.VPS_HOST }}
               User root
+              IdentityFile ~/.ssh/id_ed25519
               StrictHostKeyChecking no
 
       - name: Deploy frontend to VPS
