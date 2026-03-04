@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import type { Task, AppSettings, PomodoroState, CalendarEvent } from './types';
 import { DEFAULT_SETTINGS } from './types';
 import ClockFace from './components/ClockFace';
@@ -14,9 +14,9 @@ import { todayString, tomorrowString, formatDate } from './utils/scheduling';
 import { fetchCalendar, fetchTasks as apiFetchTasks } from './services/api';
 import * as storage from './services/storage';
 import { parseIcalEvents } from './utils/ical';
-import HelpModal from './components/HelpModal';
-import RecurringDeleteModal from './components/RecurringDeleteModal';
-import UnfinishedTasksModal from './components/UnfinishedTasksModal';
+const HelpModal = lazy(() => import('./components/HelpModal'));
+const RecurringDeleteModal = lazy(() => import('./components/RecurringDeleteModal'));
+const UnfinishedTasksModal = lazy(() => import('./components/UnfinishedTasksModal'));
 import { useUnfinishedTasks } from './hooks/useUnfinishedTasks';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
 import './App.css';
@@ -598,18 +598,20 @@ function App() {
         </div>
       )}
 
-      <UnfinishedTasksModal
-        open={showPrompt}
-        tasks={unfinishedTasks}
-        hasBacklog={settings.advancedMode && settings.enableBacklog}
-        onMoveToToday={handleMoveUnfinishedToToday}
-        onMoveToBacklog={handleMoveUnfinishedToBacklog}
-        onDelete={handleDeleteUnfinishedTask}
-        onMoveAllToToday={handleMoveAllUnfinishedToToday}
-        onMoveAllToBacklog={handleMoveAllUnfinishedToBacklog}
-        onDeleteAll={handleDeleteAllUnfinished}
-        onDismiss={dismissPrompt}
-      />
+      <Suspense fallback={null}>
+        <UnfinishedTasksModal
+          open={showPrompt}
+          tasks={unfinishedTasks}
+          hasBacklog={settings.advancedMode && settings.enableBacklog}
+          onMoveToToday={handleMoveUnfinishedToToday}
+          onMoveToBacklog={handleMoveUnfinishedToBacklog}
+          onDelete={handleDeleteUnfinishedTask}
+          onMoveAllToToday={handleMoveAllUnfinishedToToday}
+          onMoveAllToBacklog={handleMoveAllUnfinishedToBacklog}
+          onDeleteAll={handleDeleteAllUnfinished}
+          onDismiss={dismissPrompt}
+        />
+      </Suspense>
 
       {showSettings && (
         <div id="settings-panel" className="settings-panel" role="region" aria-label="Settings" onKeyDown={e => { if (e.key === 'Escape') setShowSettings(false); }}>
@@ -735,7 +737,7 @@ function App() {
                 </label>
               )}
               {icalError && (
-                <span className="settings-hint settings-hint--error">{icalError}</span>
+                <span className="settings-hint settings-hint--error" role="alert">{icalError}</span>
               )}
               {calendarEvents.length > 0 && (
                 <span className="settings-hint">
@@ -1020,15 +1022,17 @@ function App() {
         </section>
       </main>
 
-      <HelpModal open={showHelp} onClose={() => setShowHelp(false)} demoMode={demoMode} onToggleDemoMode={handleToggleDemoMode} />
-      <RecurringDeleteModal
-        open={recurringDeleteTask !== null}
-        taskTitle={recurringDeleteTask?.title ?? ''}
-        onJustThisOne={handleRecurringDeleteSingle}
-        onAllInSeries={handleRecurringDeleteAll}
-        onThisAndFuture={handleRecurringDeleteFuture}
-        onCancel={() => setRecurringDeleteTask(null)}
-      />
+      <Suspense fallback={null}>
+        <HelpModal open={showHelp} onClose={() => setShowHelp(false)} demoMode={demoMode} onToggleDemoMode={handleToggleDemoMode} />
+        <RecurringDeleteModal
+          open={recurringDeleteTask !== null}
+          taskTitle={recurringDeleteTask?.title ?? ''}
+          onJustThisOne={handleRecurringDeleteSingle}
+          onAllInSeries={handleRecurringDeleteAll}
+          onThisAndFuture={handleRecurringDeleteFuture}
+          onCancel={() => setRecurringDeleteTask(null)}
+        />
+      </Suspense>
     </div>
   );
 }

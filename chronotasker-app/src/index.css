@@ -120,7 +120,30 @@
   --color-text: #2E3440;
   --color-text-secondary: #4C566A;
   --color-border: #D8DEE9;
+  --color-accent: #5E81AC;
   --color-accent-light: #E5E9F0;
+  --color-task-important: hsl(0, 72%, 62%);
+  --color-task-saturation: 62%;
+  --color-task-lightness: 68%;
+
+  --color-hover-bg: #E5E9F0;
+  --color-active-bg: #E5E9F0;
+  --color-active-border: #5E81AC;
+  --color-btn-hover-bg: #D8DEE9;
+  --color-input-bg: #E5E9F0;
+  --color-input-border: #D8DEE9;
+  --color-input-focus: #5E81AC;
+  --color-pill-bg: #D8DEE9;
+  --color-pill-text: #4C566A;
+  --color-pill-active-bg: #5E81AC;
+  --color-pill-active-text: #ECEFF4;
+  --color-submit-bg: #5E81AC;
+  --color-submit-text: #ECEFF4;
+  --color-submit-hover: #81A1C1;
+  --color-checkbox: #4C566A;
+  --color-checkbox-done: #A3BE8C;
+  --color-muted: #D8DEE9;
+  --color-completed-opacity: 0.5;
 }
 
 * {
@@ -184,6 +207,18 @@ input[type="checkbox"] {
 
 h1, h2, h3 {
   line-height: 1.2;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -18,6 +18,7 @@ function FaqItem({ question, children }: { question: string; children: React.Rea
           height="14"
           viewBox="0 0 14 14"
           fill="none"
+          aria-hidden="true"
         >
           <path
             d="M4 5.5L7 8.5L10 5.5"

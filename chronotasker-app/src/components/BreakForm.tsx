@@ -31,7 +31,7 @@ export default function BreakForm({ onSubmit, date }: BreakFormProps) {
 
   return (
     <form className="break-form" onSubmit={handleSubmit}>
-      <span className="break-form__label">Break</span>
+      <label className="break-form__label">Break
       <div className="break-form__presets">
         {BREAK_PRESETS.map((m) => (
           <button
@@ -45,14 +45,17 @@ export default function BreakForm({ onSubmit, date }: BreakFormProps) {
           </button>
         ))}
       </div>
-      <input
-        type="time"
-        className="break-form__time"
-        value={time}
-        onChange={(e) => setTime(e.target.value)}
-        aria-label="Break time (optional)"
-        title="Set a time (optional)"
-      />
+      </label>
+      <label className="break-form__time-label">
+        <span className="visually-hidden">Break time (optional)</span>
+        <input
+          type="time"
+          className="break-form__time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          title="Set a time (optional)"
+        />
+      </label>
       <button type="submit" className="break-form__add">+ Break</button>
     </form>
   );

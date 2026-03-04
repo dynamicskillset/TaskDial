@@ -181,12 +181,12 @@
 }
 
 .unfinished-modal__action-btn--danger {
-  color: var(--color-danger, #e05252);
-  border-color: var(--color-danger, #e05252);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .unfinished-modal__action-btn--danger:hover {
-  background-color: var(--color-danger, #e05252);
+  background-color: var(--color-danger);
   color: var(--color-submit-text, #fff);
 }
 
@@ -244,7 +244,7 @@
 }
 
 .unfinished-modal__bulk-btn--danger {
-  background: var(--color-danger, #e05252);
+  background: var(--color-danger);
   color: var(--color-submit-text, #fff);
 }
 

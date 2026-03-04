@@ -457,7 +457,7 @@
   color: var(--tf-cancel-text);
   background: var(--tf-cancel-bg);
   border: 1px solid var(--tf-border);
-  border-left: 3px solid var(--color-warning, #e8a735);
+  border-left: 3px solid var(--color-warning);
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -466,7 +466,7 @@
 .task-form__backlog-btn:hover {
   background: var(--tf-cancel-hover-bg);
   color: var(--tf-text);
-  border-left-color: var(--color-warning, #e8a735);
+  border-left-color: var(--color-warning);
 }
 
 /* ============================================================

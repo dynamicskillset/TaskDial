@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, memo, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo, type ReactNode } from 'react';
 import type { Task } from '../types';
 import type { ScheduledTask } from '../utils/scheduling';
 import { tomorrowString, todayString } from '../utils/scheduling';
@@ -214,12 +214,12 @@ const TaskItem = memo(function TaskItem({
         title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
       >
         {task.completed ? (
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.15" />
             <path d="M5 9.5L7.5 12L13 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ) : (
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
           </svg>
         )}
@@ -305,7 +305,7 @@ const TaskItem = memo(function TaskItem({
               aria-label="Move up"
               title="Move up"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path d="M3 9L7 5L11 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -319,7 +319,7 @@ const TaskItem = memo(function TaskItem({
               aria-label="Move down"
               title="Move down"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -338,15 +338,16 @@ const TaskItem = memo(function TaskItem({
               aria-label="Move to another day"
               title="Move to another day"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path d="M4.5 1.5V3.5M9.5 1.5V3.5M1.5 5.5H12.5M2.5 2.5H11.5C12.05 2.5 12.5 2.95 12.5 3.5V11.5C12.5 12.05 12.05 12.5 11.5 12.5H2.5C1.95 12.5 1.5 12.05 1.5 11.5V3.5C1.5 2.95 1.95 2.5 2.5 2.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M7 7.5L9 9.5L7 11.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             {isRescheduling && (
-              <div className="task-list__reschedule-popover" onClick={(e) => e.stopPropagation()}>
+              <div className="task-list__reschedule-popover" role="dialog" aria-label="Reschedule task" onClick={(e) => e.stopPropagation()}>
                 <button
                   className="task-list__reschedule-tomorrow"
+                  autoFocus
                   onClick={() => {
                     onRescheduleTask(task.id, tomorrowString());
                   }}
@@ -379,7 +380,7 @@ const TaskItem = memo(function TaskItem({
           aria-label="Edit task"
           title="Edit task"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M10 2L12 4L5 11H3V9L10 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -396,11 +397,11 @@ const TaskItem = memo(function TaskItem({
           title={isConfirmingDelete ? 'Click again to confirm' : 'Delete task'}
         >
           {isConfirmingDelete ? (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2 7L5.5 10.5L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M3 4H11M5.5 4V3C5.5 2.45 5.95 2 6.5 2H7.5C8.05 2 8.5 2.45 8.5 3V4M6 6.5V10M8 6.5V10M4 4L4.5 11.5C4.5 12.05 4.95 12.5 5.5 12.5H8.5C9.05 12.5 9.5 12.05 9.5 11.5L10 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
@@ -454,13 +455,16 @@ export default function TaskList({
   }, [reschedulingTaskId, dismissReschedule]);
 
   // Sort: incomplete tasks by scheduledStart (matches clock face order), completed at bottom
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    return a.scheduledStart - b.scheduledStart;
-  });
+  const sortedTasks = useMemo(() =>
+    [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      return a.scheduledStart - b.scheduledStart;
+    }),
+    [tasks],
+  );
 
-  const incompleteTasks = sortedTasks.filter((t) => !t.completed);
-  const unfinishedCount = sortedTasks.filter((t) => !t.completed && !t.isBreak).length;
+  const incompleteTasks = useMemo(() => sortedTasks.filter((t) => !t.completed), [sortedTasks]);
+  const unfinishedCount = useMemo(() => sortedTasks.filter((t) => !t.completed && !t.isBreak).length, [sortedTasks]);
 
   // Colour map comes from ClockFace via prop (single source of truth)
 

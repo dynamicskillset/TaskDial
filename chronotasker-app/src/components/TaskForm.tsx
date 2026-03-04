@@ -238,6 +238,7 @@ export default function TaskForm({ onSubmit, editingTask, onCancel, date, existi
             type="button"
             className="task-form__more-toggle"
             onClick={() => setShowMore(true)}
+            aria-expanded={false}
           >
             More options
           </button>
@@ -268,8 +269,8 @@ export default function TaskForm({ onSubmit, editingTask, onCancel, date, existi
               />
             )}
             {meetingConflict && (
-              <span className="task-form__conflict-warning">
-                ⚠ Overlaps with: {meetingConflict.summary} ({minutesToTime(meetingConflict.startMinutes, use24Hour)}–{minutesToTime(meetingConflict.endMinutes, use24Hour)})
+              <span className="task-form__conflict-warning" role="alert">
+                <span aria-hidden="true">⚠</span> Overlaps with: {meetingConflict.summary} ({minutesToTime(meetingConflict.startMinutes, use24Hour)}–{minutesToTime(meetingConflict.endMinutes, use24Hour)})
               </span>
             )}
             <label className="task-form__important-toggle">

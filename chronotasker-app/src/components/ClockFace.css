@@ -47,6 +47,16 @@
   }
 }
 
+/* Reset to light defaults when user explicitly picks light on a dark OS */
+.light .clock-face {
+  --clock-ring-bg: var(--color-border);
+  --clock-working-day-fill: var(--color-bg);
+  --clock-break-bg: color-mix(in srgb, var(--color-border) 35%, var(--color-bg));
+  --clock-hover-brightness: 1.12;
+  --clock-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  --clock-calendar-opacity: 0.7;
+}
+
 /* ============================================================
    Container and SVG
    ============================================================ */

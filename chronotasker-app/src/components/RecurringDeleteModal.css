@@ -118,11 +118,11 @@
 }
 
 .recurring-delete-modal__option--danger {
-  border-left-color: var(--color-danger, #e05252);
+  border-left-color: var(--color-danger);
 }
 
 .recurring-delete-modal__option--warning {
-  border-left-color: var(--color-warning, #e8a735);
+  border-left-color: var(--color-warning);
 }
 
 .recurring-delete-modal__option-title {

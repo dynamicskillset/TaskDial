@@ -268,11 +268,11 @@
 }
 
 .help-modal__demo-btn--active {
-  background: var(--color-warning, #e8a735);
+  background: var(--color-warning);
 }
 
 .help-modal__demo-btn--active:hover {
-  background: var(--color-warning, #e8a735);
+  background: var(--color-warning);
 }
 
 /* ============================================================
