@@ -659,45 +659,44 @@ function App() {
             </select>
           </label>
 
-          {/* Pomodoro section */}
-          <h3 className="settings-panel__section-heading">Pomodoro</h3>
-          <label className="checkbox-label">
-            <input type="checkbox" checked={settings.showPomodoroTimer}
-              onChange={e => {
-                const s = { ...settings, showPomodoroTimer: e.target.checked };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-            Show Pomodoro Timer
-          </label>
-          <label>
-            Work duration (min):
-            <input type="number" value={settings.workDuration} min={1} max={120}
-              onChange={e => {
-                const s = { ...settings, workDuration: Number(e.target.value) };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-          </label>
-          <label>
-            Short break (min):
-            <input type="number" value={settings.shortBreakDuration} min={1} max={30}
-              onChange={e => {
-                const s = { ...settings, shortBreakDuration: Number(e.target.value) };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-          </label>
-          <label>
-            Long break (min):
-            <input type="number" value={settings.longBreakDuration} min={1} max={60}
-              onChange={e => {
-                const s = { ...settings, longBreakDuration: Number(e.target.value) };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-          </label>
-
           {/* Advanced section (only when advancedMode is on) */}
           {settings.advancedMode && (
             <>
-              <h3 className="settings-panel__section-heading">Advanced</h3>
+              {/* Pomodoro section */}
+              <h3 className="settings-panel__section-heading">Pomodoro</h3>
+              <label className="checkbox-label">
+                <input type="checkbox" checked={settings.showPomodoroTimer}
+                  onChange={e => {
+                    const s = { ...settings, showPomodoroTimer: e.target.checked };
+                    setSettings(s); debouncedPushSettings(s);
+                  }} />
+                Show Pomodoro Timer
+              </label>
+              <label>
+                Work duration (min):
+                <input type="number" value={settings.workDuration} min={1} max={120}
+                  onChange={e => {
+                    const s = { ...settings, workDuration: Number(e.target.value) };
+                    setSettings(s); debouncedPushSettings(s);
+                  }} />
+              </label>
+              <label>
+                Short break (min):
+                <input type="number" value={settings.shortBreakDuration} min={1} max={30}
+                  onChange={e => {
+                    const s = { ...settings, shortBreakDuration: Number(e.target.value) };
+                    setSettings(s); debouncedPushSettings(s);
+                  }} />
+              </label>
+              <label>
+                Long break (min):
+                <input type="number" value={settings.longBreakDuration} min={1} max={60}
+                  onChange={e => {
+                    const s = { ...settings, longBreakDuration: Number(e.target.value) };
+                    setSettings(s); debouncedPushSettings(s);
+                  }} />
+              </label>
+              <h3 className="settings-panel__section-heading">Scheduling</h3>
               <label className="checkbox-label">
                 <input type="checkbox" checked={settings.autoAdvance}
                   onChange={e => {
