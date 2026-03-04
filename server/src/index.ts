@@ -14,6 +14,7 @@ import settingsRouter from './routes/settings';
 import syncRouter from './routes/sync';
 import calendarRouter from './routes/calendar';
 import recurrenceRouter from './routes/recurrence';
+import analyticsRouter from './routes/analytics';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -37,6 +38,7 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/calendar', calendarRouter);
 app.use('/api/recurrence', recurrenceRouter);
+app.use('/api/analytics', analyticsRouter);
 
 // Serve frontend static files (fallback when not behind Caddy/nginx)
 const frontendPath = path.join(__dirname, '..', '..', 'frontend');

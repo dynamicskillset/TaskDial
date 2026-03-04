@@ -11,7 +11,7 @@ import { usePomodoro } from './hooks/usePomodoro';
 import { useSync } from './hooks/useSync';
 import { scheduleTasks, type ScheduledTask } from './utils/scheduling';
 import { todayString, tomorrowString, formatDate } from './utils/scheduling';
-import { fetchCalendar, fetchTasks as apiFetchTasks } from './services/api';
+import { fetchCalendar, fetchTasks as apiFetchTasks, logInstallEvent } from './services/api';
 import * as storage from './services/storage';
 import { parseIcalEvents } from './utils/ical';
 const HelpModal = lazy(() => import('./components/HelpModal'));
@@ -74,8 +74,11 @@ function App() {
   const { unfinishedTasks, setUnfinishedTasks, showPrompt, dismissPrompt } =
     useUnfinishedTasks({ currentDate: date, enabled: !demoMode });
 
+  const installPromptOptions = useMemo(() => ({
+    onEvent: (event: 'impression' | 'install' | 'dismiss') => logInstallEvent(event),
+  }), []);
   const { showBanner: showInstallBanner, isIOS, install: installApp, dismiss: dismissInstall } =
-    useInstallPrompt(!demoMode);
+    useInstallPrompt(!demoMode, installPromptOptions);
 
   // Debounced settings push to avoid API spam on every keystroke
   const settingsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -602,20 +605,6 @@ function App() {
         </div>
       )}
 
-      {showInstallBanner && (
-        <div className="install-banner" role="status">
-          <span className="install-banner__text">
-            {isIOS
-              ? 'Install ChronoTasker: tap Share, then "Add to Home Screen".'
-              : 'Install ChronoTasker for quick access from your home screen.'}
-          </span>
-          {!isIOS && (
-            <button className="install-banner__action" onClick={installApp}>Install</button>
-          )}
-          <button className="install-banner__dismiss" onClick={dismissInstall} aria-label="Dismiss install prompt">&#x2715;</button>
-        </div>
-      )}
-
       <Suspense fallback={null}>
         <UnfinishedTasksModal
           open={showPrompt}
@@ -1064,6 +1053,28 @@ function App() {
           onCancel={() => setRecurringDeleteTask(null)}
         />
       </Suspense>
+
+      {showInstallBanner && (
+        <div className="install-banner" role="status">
+          <span className="install-banner__text">
+            {isIOS
+              ? 'Install ChronoTasker: tap Share, then "Add to Home Screen".'
+              : 'Install ChronoTasker for quick access from your home screen.'}
+          </span>
+          <div className="install-banner__actions">
+            {!isIOS && (
+              <button className="install-banner__action" onClick={installApp}>Install</button>
+            )}
+            <button
+              className={`install-banner__dismiss${isIOS ? ' install-banner__dismiss--text' : ''}`}
+              onClick={dismissInstall}
+              aria-label="Dismiss install prompt"
+            >
+              {isIOS ? 'Maybe later' : '\u2715'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

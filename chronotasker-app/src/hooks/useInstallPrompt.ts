@@ -5,7 +5,16 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const FIRST_VISIT_KEY = 'chronotasker_first_visit';
 const DISMISSED_KEY = 'chronotasker_install_dismissed';
+const INSTALLED_KEY = 'chronotasker_app_installed';
+const DISMISS_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+type InstallEvent = 'impression' | 'install' | 'dismiss';
+
+interface UseInstallPromptOptions {
+  onEvent?: (event: InstallEvent) => void;
+}
 
 function isStandalone(): boolean {
   return (
@@ -23,13 +32,38 @@ function isIOSSafari(): boolean {
   );
 }
 
-export function useInstallPrompt(enabled: boolean) {
+function isSecondVisit(): boolean {
+  const firstVisit = localStorage.getItem(FIRST_VISIT_KEY);
+  if (!firstVisit) {
+    localStorage.setItem(FIRST_VISIT_KEY, Date.now().toString());
+    return false;
+  }
+  return true;
+}
+
+function isDismissedWithinTTL(): boolean {
+  const dismissed = localStorage.getItem(DISMISSED_KEY);
+  if (!dismissed) return false;
+  const elapsed = Date.now() - parseInt(dismissed, 10);
+  if (elapsed > DISMISS_TTL_MS) {
+    localStorage.removeItem(DISMISSED_KEY);
+    return false;
+  }
+  return true;
+}
+
+function isAlreadyInstalled(): boolean {
+  return localStorage.getItem(INSTALLED_KEY) === '1';
+}
+
+export function useInstallPrompt(enabled: boolean, options?: UseInstallPromptOptions) {
   const [showBanner, setShowBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
+  const impressionFired = useRef(false);
 
   useEffect(() => {
-    if (!enabled || isStandalone() || localStorage.getItem(DISMISSED_KEY)) return;
+    if (!enabled || isStandalone() || isAlreadyInstalled() || !isSecondVisit() || isDismissedWithinTTL()) return;
 
     if (isIOSSafari()) {
       setIsIOS(true);
@@ -47,21 +81,42 @@ export function useInstallPrompt(enabled: boolean) {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, [enabled]);
 
+  // Listen for appinstalled
+  useEffect(() => {
+    const handler = () => {
+      localStorage.setItem(INSTALLED_KEY, '1');
+      setShowBanner(false);
+    };
+
+    window.addEventListener('appinstalled', handler);
+    return () => window.removeEventListener('appinstalled', handler);
+  }, []);
+
+  // Fire impression event when banner first shows
+  useEffect(() => {
+    if (showBanner && !impressionFired.current) {
+      impressionFired.current = true;
+      options?.onEvent?.('impression');
+    }
+  }, [showBanner, options]);
+
   const install = useCallback(async () => {
     const prompt = deferredPrompt.current;
     if (!prompt) return;
+    options?.onEvent?.('install');
     await prompt.prompt();
     const { outcome } = await prompt.userChoice;
     if (outcome === 'accepted') {
       setShowBanner(false);
     }
     deferredPrompt.current = null;
-  }, []);
+  }, [options]);
 
   const dismiss = useCallback(() => {
-    localStorage.setItem(DISMISSED_KEY, '1');
+    localStorage.setItem(DISMISSED_KEY, Date.now().toString());
     setShowBanner(false);
-  }, []);
+    options?.onEvent?.('dismiss');
+  }, [options]);
 
   return { showBanner, isIOS, install, dismiss };
 }

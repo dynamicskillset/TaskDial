@@ -157,6 +157,18 @@ export async function fetchCalendar(url: string): Promise<string> {
   return res.text();
 }
 
+// Analytics
+export async function logInstallEvent(event: 'impression' | 'install' | 'dismiss'): Promise<void> {
+  try {
+    await request('/api/analytics/install', {
+      method: 'POST',
+      body: JSON.stringify({ event, timestamp: new Date().toISOString() }),
+    });
+  } catch {
+    // Best-effort — don't break the app for analytics
+  }
+}
+
 // Health check
 export async function healthCheck(): Promise<boolean> {
   try {

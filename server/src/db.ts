@@ -52,6 +52,15 @@ function initTables(): void {
     CREATE INDEX IF NOT EXISTS idx_tasks_updated ON tasks(updated_at);
     CREATE INDEX IF NOT EXISTS idx_pomodoro_date ON pomodoro_sessions(date);
     CREATE INDEX IF NOT EXISTS idx_pomodoro_started ON pomodoro_sessions(started_at);
+
+    CREATE TABLE IF NOT EXISTS analytics_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT NOT NULL,
+      event_data TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at);
   `);
 
   // Migrations for existing databases
