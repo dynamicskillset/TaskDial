@@ -18,6 +18,7 @@ const HelpModal = lazy(() => import('./components/HelpModal'));
 const RecurringDeleteModal = lazy(() => import('./components/RecurringDeleteModal'));
 const UnfinishedTasksModal = lazy(() => import('./components/UnfinishedTasksModal'));
 import { useUnfinishedTasks } from './hooks/useUnfinishedTasks';
+import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
 import './App.css';
 
@@ -72,6 +73,9 @@ function App() {
   // Unfinished tasks from yesterday
   const { unfinishedTasks, setUnfinishedTasks, showPrompt, dismissPrompt } =
     useUnfinishedTasks({ currentDate: date, enabled: !demoMode });
+
+  const { showBanner: showInstallBanner, isIOS, install: installApp, dismiss: dismissInstall } =
+    useInstallPrompt(!demoMode);
 
   // Debounced settings push to avoid API spam on every keystroke
   const settingsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -595,6 +599,20 @@ function App() {
         <div className="demo-banner" role="status">
           <span className="demo-banner__text">Demo mode: exploring with sample data. Your real tasks are safe.</span>
           <button className="demo-banner__exit" onClick={exitDemoMode}>Exit demo</button>
+        </div>
+      )}
+
+      {showInstallBanner && (
+        <div className="install-banner" role="status">
+          <span className="install-banner__text">
+            {isIOS
+              ? 'Install ChronoTasker: tap Share, then "Add to Home Screen".'
+              : 'Install ChronoTasker for quick access from your home screen.'}
+          </span>
+          {!isIOS && (
+            <button className="install-banner__action" onClick={installApp}>Install</button>
+          )}
+          <button className="install-banner__dismiss" onClick={dismissInstall} aria-label="Dismiss install prompt">&#x2715;</button>
         </div>
       )}
 

@@ -419,6 +419,58 @@
   border: none;
 }
 
+/* ============================================================
+   Install banner
+   ============================================================ */
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  font-size: 0.8rem;
+}
+
+.install-banner__text { color: var(--color-text); }
+
+.install-banner__action {
+  flex-shrink: 0;
+  padding: 0.3em 0.75em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: var(--color-accent);
+  color: var(--color-submit-text);
+  transition: opacity 0.15s ease;
+}
+.install-banner__action:hover { opacity: 0.85; }
+
+.install-banner__dismiss {
+  flex-shrink: 0;
+  padding: 0.25rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.install-banner__dismiss:hover {
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
 /* Mobile layout */
 @media (max-width: 768px) {
   .app-main {
