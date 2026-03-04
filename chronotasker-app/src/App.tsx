@@ -9,7 +9,7 @@ import BreakForm from './components/BreakForm';
 import BacklogList from './components/BacklogList';
 import { usePomodoro } from './hooks/usePomodoro';
 import { useSync } from './hooks/useSync';
-import { scheduleTasks, type ScheduledTask } from './utils/scheduling';
+import { scheduleTasks, findNonOverflowOrdering, type ScheduledTask } from './utils/scheduling';
 import { formatDuration } from './utils/format';
 import { todayString, tomorrowString, formatDate } from './utils/scheduling';
 import { fetchCalendar, fetchTasks as apiFetchTasks, logInstallEvent } from './services/api';
@@ -224,6 +224,24 @@ function App() {
     return { eventMinutes, taskMinutes, breakMinutes, totalMinutes };
   }, [settings.showDaySummary, settings.advancedMode, settings.meetingBufferMinutes, calendarEvents, tasks]);
 
+  // Reorg suggestion: detect if a largest-first ordering would eliminate overflow
+  const flexibleTaskKey = useMemo(
+    () => tasks.filter(t => !t.fixedStartTime && !t.completed).map(t => `${t.id}:${t.durationMinutes}`).join(','),
+    [tasks]
+  );
+  const suggestedOrdering = useMemo(
+    () => findNonOverflowOrdering(tasks, settings.dayStartHour, settings.dayEndHour, currentTime, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tasks, settings.dayStartHour, settings.dayEndHour, currentMinuteKey, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday]
+  );
+  const [reorgDismissed, setReorgDismissed] = useState(false);
+  const prevFlexibleTaskKey = useRef(flexibleTaskKey);
+  if (prevFlexibleTaskKey.current !== flexibleTaskKey) {
+    prevFlexibleTaskKey.current = flexibleTaskKey;
+    if (reorgDismissed) setReorgDismissed(false);
+  }
+  const showReorgBanner = !!suggestedOrdering && !reorgDismissed;
+
   // Merge scheduling metadata (overflows, meetingConflict) into full task list for TaskList
   const tasksWithScheduleInfo: ScheduledTask[] = useMemo(() => {
     const scheduleMap = new Map<string, ScheduledTask>();
@@ -375,6 +393,11 @@ function App() {
       });
     });
   }, [pushTask]);
+
+  const handleApplyReorg = useCallback(() => {
+    if (suggestedOrdering) handleReorderAll(suggestedOrdering);
+    setReorgDismissed(true);
+  }, [suggestedOrdering, handleReorderAll]);
 
   const handleRescheduleTask = useCallback((taskId: string, newDate: string) => {
     const task = tasks.find(t => t.id === taskId);
@@ -654,179 +677,182 @@ function App() {
       </Suspense>
 
       {showSettings && (
+        <div className="settings-panel-wrapper">
         <div id="settings-panel" className="settings-panel" role="region" aria-label="Settings" onKeyDown={e => { if (e.key === 'Escape') setShowSettings(false); }}>
-          <h2>Settings</h2>
+          <div className="settings-panel__header">
+            <h2 className="settings-panel__title">Settings</h2>
+            <button className="settings-panel__close" onClick={() => setShowSettings(false)} aria-label="Close settings">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            </button>
+          </div>
 
-          {/* Display section */}
-          <h3 className="settings-panel__section-heading">Display</h3>
-          <label>
-            Day start:
-            <input type="time" value={`${String(settings.dayStartHour).padStart(2, '0')}:00`}
-              onChange={e => {
-                const h = parseInt(e.target.value.split(':')[0], 10);
-                if (!isNaN(h)) {
-                  const s = { ...settings, dayStartHour: h };
-                  setSettings(s); debouncedPushSettings(s);
-                }
-              }} />
-          </label>
-          <label>
-            Day end:
-            <input type="time" value={`${String(settings.dayEndHour).padStart(2, '0')}:00`}
-              onChange={e => {
-                const h = parseInt(e.target.value.split(':')[0], 10);
-                if (!isNaN(h)) {
-                  const s = { ...settings, dayEndHour: h };
-                  setSettings(s); debouncedPushSettings(s);
-                }
-              }} />
-          </label>
-          <label className="checkbox-label">
-            <input type="checkbox" checked={settings.use24Hour}
-              onChange={e => {
-                const s = { ...settings, use24Hour: e.target.checked };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-            Use 24-hour time
-          </label>
-          <label>
-            Highlight colour:
-            <select value={settings.colorScheme || 'nord'} onChange={e => {
-              const s = { ...settings, colorScheme: e.target.value as AppSettings['colorScheme'] };
-              setSettings(s); debouncedPushSettings(s);
-            }}>
-              <option value="nord">Nord</option>
-              <option value="aurora">Aurora</option>
-              <option value="frost">Frost</option>
-              <option value="evergreen">Evergreen</option>
-              <option value="berry">Berry</option>
-            </select>
-          </label>
+          {/* Mode toggle — at top, prominent */}
+          <div className="settings-row settings-row--featured">
+            <div className="settings-row__label-group">
+              <span className="settings-row__label">Advanced mode</span>
+              <span className="settings-row__hint">Fixed-time scheduling, calendar, recurring tasks</span>
+            </div>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={settings.advancedMode} onChange={e => { const s = { ...settings, advancedMode: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+              <span className="toggle-switch__track" aria-hidden="true" />
+            </label>
+          </div>
 
-          {/* Advanced section (only when advancedMode is on) */}
-          {settings.advancedMode && (
-            <>
-              {/* Pomodoro section */}
-              <h3 className="settings-panel__section-heading">Pomodoro</h3>
-              <label className="checkbox-label">
-                <input type="checkbox" checked={settings.showPomodoroTimer}
-                  onChange={e => {
-                    const s = { ...settings, showPomodoroTimer: e.target.checked };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-                Show Pomodoro Timer
-              </label>
-              <label>
-                Work duration (min):
-                <input type="number" value={settings.workDuration} min={1} max={120}
-                  onChange={e => {
-                    const s = { ...settings, workDuration: Number(e.target.value) };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-              </label>
-              <label>
-                Short break (min):
-                <input type="number" value={settings.shortBreakDuration} min={1} max={30}
-                  onChange={e => {
-                    const s = { ...settings, shortBreakDuration: Number(e.target.value) };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-              </label>
-              <label>
-                Long break (min):
-                <input type="number" value={settings.longBreakDuration} min={1} max={60}
-                  onChange={e => {
-                    const s = { ...settings, longBreakDuration: Number(e.target.value) };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-              </label>
-              <h3 className="settings-panel__section-heading">Scheduling</h3>
-              <label className="checkbox-label">
-                <input type="checkbox" checked={settings.autoAdvance}
-                  onChange={e => {
-                    const s = { ...settings, autoAdvance: e.target.checked };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-                Auto-advance (push incomplete tasks)
-              </label>
-              <label>
-                iCal feed URL:
-                <div className="ical-input-row">
-                  <input
-                    type="url"
-                    value={icalUrlInput}
-                    placeholder="https://calendar.proton.me/..."
-                    onChange={e => setIcalUrlInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleLoadCalendar(); }}
-                  />
-                  <button
-                    className="ical-load-btn"
-                    onClick={handleLoadCalendar}
-                    disabled={icalLoading}
-                  >
-                    {icalLoading ? 'Loading...' : committedIcalUrl ? 'Reload' : 'Load'}
-                  </button>
+          {/* Display + Scheduling: side-by-side on desktop when both visible */}
+          <div className={settings.advancedMode ? 'settings-panel__cols' : undefined}>
+            {/* Display column */}
+            <div className="settings-col">
+              <div className="settings-divider" />
+              <p className="settings-section-label">Display</p>
+
+              <div className="settings-row">
+                <span className="settings-row__label">Day hours</span>
+                <div className="settings-row__control--inline">
+                  <input type="time" className="settings-time-input" value={`${String(settings.dayStartHour).padStart(2, '0')}:00`}
+                    onChange={e => { const h = parseInt(e.target.value.split(':')[0], 10); if (!isNaN(h)) { const s = { ...settings, dayStartHour: h }; setSettings(s); debouncedPushSettings(s); } }} />
+                  <span className="settings-row__sep">to</span>
+                  <input type="time" className="settings-time-input" value={`${String(settings.dayEndHour).padStart(2, '0')}:00`}
+                    onChange={e => { const h = parseInt(e.target.value.split(':')[0], 10); if (!isNaN(h)) { const s = { ...settings, dayEndHour: h }; setSettings(s); debouncedPushSettings(s); } }} />
                 </div>
-              </label>
-              {committedIcalUrl && (
-                <label>
-                  Buffer after meetings (min):
-                  <input type="number" value={settings.meetingBufferMinutes} min={0} max={60}
-                    onChange={e => {
-                      const s = { ...settings, meetingBufferMinutes: Number(e.target.value) };
-                      setSettings(s); debouncedPushSettings(s);
-                    }} />
-                </label>
-              )}
-              {icalError && (
-                <span className="settings-hint settings-hint--error" role="alert">{icalError}</span>
-              )}
-              {calendarEvents.length > 0 && (
-                <span className="settings-hint">
-                  {calendarEvents.length} event{calendarEvents.length !== 1 ? 's' : ''} loaded
-                </span>
-              )}
-              {committedIcalUrl && !icalError && calendarEvents.length === 0 && !icalLoading && (
-                <span className="settings-hint">No events for this date</span>
-              )}
-              <label className="checkbox-label">
-                <input type="checkbox" checked={settings.enableRecurringTasks}
-                  onChange={e => {
-                    const s = { ...settings, enableRecurringTasks: e.target.checked };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-                Recurring tasks
-              </label>
-              <label className="checkbox-label">
-                <input type="checkbox" checked={settings.enableBacklog}
-                  onChange={e => {
-                    const s = { ...settings, enableBacklog: e.target.checked };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-                Backlog
-              </label>
-              <label className="checkbox-label">
-                <input type="checkbox" checked={settings.showDaySummary}
-                  onChange={e => {
-                    const s = { ...settings, showDaySummary: e.target.checked };
-                    setSettings(s); debouncedPushSettings(s);
-                  }} />
-                Day time summary
-              </label>
-            </>
-          )}
+              </div>
 
-          {/* Mode section (always visible, at bottom) */}
-          <h3 className="settings-panel__section-heading">Mode</h3>
-          <label className="checkbox-label">
-            <input type="checkbox" checked={settings.advancedMode}
-              onChange={e => {
-                const s = { ...settings, advancedMode: e.target.checked };
-                setSettings(s); debouncedPushSettings(s);
-              }} />
-            Advanced mode
-          </label>
-          <span className="settings-hint">Adds fixed-time scheduling, calendar integration, recurring tasks, and more</span>
+              <div className="settings-row">
+                <span className="settings-row__label">24-hour time</span>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.use24Hour} onChange={e => { const s = { ...settings, use24Hour: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                  <span className="toggle-switch__track" aria-hidden="true" />
+                </label>
+              </div>
+
+              <div className="settings-row">
+                <span className="settings-row__label">Highlight colour</span>
+                <div className="colour-swatches" role="radiogroup" aria-label="Highlight colour">
+                  {(['nord', 'aurora', 'frost', 'evergreen', 'berry'] as const).map(scheme => (
+                    <label key={scheme} className={`colour-swatch colour-swatch--${scheme}${(settings.colorScheme || 'nord') === scheme ? ' colour-swatch--active' : ''}`} title={scheme.charAt(0).toUpperCase() + scheme.slice(1)}>
+                      <input type="radio" name="colorScheme" value={scheme} checked={(settings.colorScheme || 'nord') === scheme}
+                        onChange={() => { const s = { ...settings, colorScheme: scheme as AppSettings['colorScheme'] }; setSettings(s); debouncedPushSettings(s); }} />
+                      <span className="colour-swatch__dot" />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Scheduling column (advanced only) */}
+            {settings.advancedMode && (
+              <div className="settings-col settings-col--right">
+                <div className="settings-divider" />
+                <p className="settings-section-label">Scheduling</p>
+
+                <div className="settings-row">
+                  <div className="settings-row__label-group">
+                    <span className="settings-row__label">Auto-advance</span>
+                    <span className="settings-row__hint">Start scheduling from now, not the day start</span>
+                  </div>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={settings.autoAdvance} onChange={e => { const s = { ...settings, autoAdvance: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                    <span className="toggle-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
+
+                <div className="settings-row settings-row--stacked">
+                  <span className="settings-row__label">Calendar feed</span>
+                  <div className="ical-input-row">
+                    <input type="url" value={icalUrlInput} placeholder="https://calendar.proton.me/..."
+                      onChange={e => setIcalUrlInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleLoadCalendar(); }} />
+                    <button className="ical-load-btn" onClick={handleLoadCalendar} disabled={icalLoading}>
+                      {icalLoading ? 'Loading…' : committedIcalUrl ? 'Reload' : 'Load'}
+                    </button>
+                  </div>
+                  {icalError && <span className="settings-hint settings-hint--error" role="alert">{icalError}</span>}
+                  {calendarEvents.length > 0 && <span className="settings-hint">{calendarEvents.length} event{calendarEvents.length !== 1 ? 's' : ''} loaded</span>}
+                  {committedIcalUrl && !icalError && calendarEvents.length === 0 && !icalLoading && <span className="settings-hint">No events for this date</span>}
+                </div>
+
+                {committedIcalUrl && (
+                  <div className="settings-row">
+                    <span className="settings-row__label">Buffer after meetings</span>
+                    <div className="stepper">
+                      <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, meetingBufferMinutes: Math.max(0, settings.meetingBufferMinutes - 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Decrease">−</button>
+                      <span className="stepper__value">{settings.meetingBufferMinutes}</span>
+                      <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, meetingBufferMinutes: Math.min(60, settings.meetingBufferMinutes + 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Increase">+</button>
+                      <span className="stepper__unit">min</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="settings-row">
+                  <span className="settings-row__label">Recurring tasks</span>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={settings.enableRecurringTasks} onChange={e => { const s = { ...settings, enableRecurringTasks: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                    <span className="toggle-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
+
+                <div className="settings-row">
+                  <span className="settings-row__label">Backlog</span>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={settings.enableBacklog} onChange={e => { const s = { ...settings, enableBacklog: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                    <span className="toggle-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
+
+                <div className="settings-row">
+                  <span className="settings-row__label">Day time summary</span>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={settings.showDaySummary} onChange={e => { const s = { ...settings, showDaySummary: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                    <span className="toggle-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
+
+                {/* Pomodoro — lives at the bottom of the right column */}
+                <div className="settings-divider settings-divider--inset" />
+                <p className="settings-section-label">Pomodoro</p>
+
+                <div className="settings-row">
+                  <span className="settings-row__label">Pomodoro Timer</span>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={settings.showPomodoroTimer} onChange={e => { const s = { ...settings, showPomodoroTimer: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
+                    <span className="toggle-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
+
+                {settings.showPomodoroTimer && (
+                  <div className="settings-subsection">
+                    <div className="settings-row">
+                      <span className="settings-row__label">Work</span>
+                      <div className="stepper">
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, workDuration: Math.max(1, settings.workDuration - 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Decrease">−</button>
+                        <span className="stepper__value">{settings.workDuration}</span>
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, workDuration: Math.min(120, settings.workDuration + 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Increase">+</button>
+                        <span className="stepper__unit">min</span>
+                      </div>
+                    </div>
+                    <div className="settings-row">
+                      <span className="settings-row__label">Short break</span>
+                      <div className="stepper">
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, shortBreakDuration: Math.max(1, settings.shortBreakDuration - 1) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Decrease">−</button>
+                        <span className="stepper__value">{settings.shortBreakDuration}</span>
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, shortBreakDuration: Math.min(30, settings.shortBreakDuration + 1) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Increase">+</button>
+                        <span className="stepper__unit">min</span>
+                      </div>
+                    </div>
+                    <div className="settings-row">
+                      <span className="settings-row__label">Long break</span>
+                      <div className="stepper">
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, longBreakDuration: Math.max(1, settings.longBreakDuration - 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Decrease">−</button>
+                        <span className="stepper__value">{settings.longBreakDuration}</span>
+                        <button type="button" className="stepper__btn" onClick={() => { const s = { ...settings, longBreakDuration: Math.min(60, settings.longBreakDuration + 5) }; setSettings(s); debouncedPushSettings(s); }} aria-label="Increase">+</button>
+                        <span className="stepper__unit">min</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
         </div>
       )}
 
@@ -839,7 +865,10 @@ function App() {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         {date !== todayString() && (
-          <button onClick={goToday} className="today-btn">Today</button>
+          <button onClick={goToday} className="today-btn" title="Go to today">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5H1M4.5 2L1 5.5L4.5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Today
+          </button>
         )}
       </div>
 
@@ -946,7 +975,7 @@ function App() {
 
         <section className="sidebar">
           {/* Collapsible Pomodoro Timer */}
-          {settings.showPomodoroTimer && (
+          {settings.advancedMode && settings.showPomodoroTimer && (
             <div className="collapsible-section">
               <button
                 className="collapsible-section__header"
@@ -1062,6 +1091,15 @@ function App() {
               </button>
               {showTaskList && (
                 <div className="collapsible-section__body collapsible-section__body--flush">
+                  {showReorgBanner && (
+                    <div className="reorg-banner" role="status">
+                      <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
+                      <div className="reorg-banner__actions">
+                        <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
+                        <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
+                      </div>
+                    </div>
+                  )}
                   <TaskList
                     tasks={tasksWithScheduleInfo}
                     colorMap={clockColorMap}
@@ -1081,6 +1119,15 @@ function App() {
             </div>
           ) : (
             <div className="sidebar-section sidebar-section--flush">
+              {showReorgBanner && (
+                <div className="reorg-banner" role="status">
+                  <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
+                  <div className="reorg-banner__actions">
+                    <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
+                    <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
+                  </div>
+                </div>
+              )}
               <TaskList
                 tasks={tasksWithScheduleInfo}
                 colorMap={clockColorMap}

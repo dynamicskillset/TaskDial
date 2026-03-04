@@ -148,6 +148,50 @@ export function scheduleTasks(
 }
 
 /**
+ * Try to find a task ordering that eliminates overflow using a largest-first heuristic.
+ * Returns an array of task IDs in the suggested order, or null if:
+ * - there is no current overflow
+ * - fewer than 2 flexible tasks exist
+ * - the largest-first ordering still overflows
+ */
+export function findNonOverflowOrdering(
+  tasks: Task[],
+  dayStartHour: number,
+  dayEndHour: number,
+  currentTime: Date,
+  autoAdvance: boolean,
+  calendarEvents: CalendarEvent[] = [],
+  meetingBufferMinutes: number = 0,
+  isToday: boolean = true,
+): string[] | null {
+  // Check if current ordering already overflows
+  const current = scheduleTasks(tasks, dayStartHour, dayEndHour, currentTime, autoAdvance, calendarEvents, meetingBufferMinutes, isToday);
+  const hasOverflow = current.some(t => t.overflows);
+  if (!hasOverflow) return null;
+
+  // Get flexible incomplete tasks (no fixed time, not completed)
+  const flexibleTasks = tasks.filter(t => !t.fixedStartTime && !t.completed);
+  if (flexibleTasks.length < 2) return null;
+
+  // Sort flexible tasks largest-first
+  const sortedBySize = [...flexibleTasks].sort((a, b) => b.durationMinutes - a.durationMinutes);
+
+  // Build reordered task array preserving fixed tasks in place
+  const fixedTasks = tasks.filter(t => t.fixedStartTime || t.completed);
+  const reordered: Task[] = [
+    ...fixedTasks,
+    ...sortedBySize.map((t, i) => ({ ...t, sortOrder: i })),
+  ];
+
+  // Check if largest-first ordering eliminates overflow
+  const trial = scheduleTasks(reordered, dayStartHour, dayEndHour, currentTime, autoAdvance, calendarEvents, meetingBufferMinutes, isToday);
+  if (trial.some(t => t.overflows)) return null;
+
+  // Return the new order as task IDs (fixed tasks keep their existing sortOrder influence)
+  return sortedBySize.map(t => t.id);
+}
+
+/**
  * Convert minutes from midnight to HH:MM string
  */
 export function minutesToTime(minutes: number, use24Hour: boolean): string {
