@@ -1,7 +1,7 @@
 .app {
-  max-width: 1600px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1.25rem;
+  padding: 1.25rem 2rem;
   min-height: 100vh;
 }
 
@@ -197,7 +197,7 @@
 
 .app-main {
   display: grid;
-  grid-template-columns: minmax(320px, 400px) 1fr;
+  grid-template-columns: minmax(340px, 1fr) minmax(480px, 1.4fr);
   gap: 2rem;
   align-items: start;
 }
@@ -617,7 +617,7 @@
 /* Wide screens — give sidebar more room */
 @media (min-width: 1400px) {
   .app-main {
-    grid-template-columns: minmax(360px, 440px) 1fr;
+    grid-template-columns: minmax(360px, 1fr) minmax(520px, 1.5fr);
   }
 }
 
