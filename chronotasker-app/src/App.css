@@ -507,6 +507,18 @@
   align-items: start;
 }
 
+.app-main--clock-right {
+  grid-template-columns: minmax(480px, 1.4fr) minmax(340px, 1fr);
+}
+
+.app-main--clock-right .clock-section {
+  grid-column: 2;
+}
+
+.app-main--clock-right .sidebar {
+  grid-column: 1;
+}
+
 .clock-section {
   display: flex;
   flex-direction: column;
@@ -520,8 +532,6 @@
    ============================================================ */
 .day-summary {
   width: 100%;
-  max-width: 480px;
-  margin-top: 1.5rem;
 }
 
 .day-summary__heading {
@@ -604,6 +614,60 @@
   font-weight: 700;
 }
 
+/* ============================================================
+   Clock column draggable panels (calendar + day summary)
+   ============================================================ */
+.clock-panel {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.clock-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-btn-hover-bg);
+  cursor: grab;
+}
+
+.clock-panel__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+.clock-panel__body {
+  padding: 0.625rem 0.75rem;
+}
+
+.clock-panel .panel-drag-handle {
+  opacity: 0.3;
+}
+
+.clock-panel:hover .panel-drag-handle {
+  opacity: 0.6;
+}
+
+.clock-panel--dragging {
+  opacity: 0.45;
+}
+
+.clock-panel--drag-over {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
 /* Calendar event list below the clock */
 .calendar-events {
   width: 100%;
@@ -627,6 +691,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+/* When used directly as clock-panel__body, the list needs its own padding */
+.calendar-events__list.clock-panel__body {
+  padding: 0.625rem 0.75rem;
 }
 
 .calendar-events__item {

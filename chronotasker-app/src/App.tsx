@@ -59,6 +59,15 @@ function App() {
     activeTaskId: string | null;
   } | null>(null);
 
+  // Clock column panel order (calendar + day summary), persisted to localStorage
+  const [clockPanelOrder, setClockPanelOrder] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('ct-clock-panel-order') || 'null') ?? ['calendar', 'summary']; }
+    catch { return ['calendar', 'summary']; }
+  });
+  const clockDraggingPanelRef = useRef<string | null>(null);
+  const [clockDraggingPanel, setClockDraggingPanel] = useState<string | null>(null);
+  const [clockDragOverPanel, setClockDragOverPanel] = useState<string | null>(null);
+
   // Panel drag-to-reorder (advanced mode only, order persisted to localStorage)
   const [panelOrder, setPanelOrder] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('ct-panel-order') || 'null') ?? ['timer', 'form', 'tasks', 'backlog']; }
@@ -402,6 +411,25 @@ function App() {
       });
     });
   }, [pushTask]);
+
+  const handleClockPanelDrop = useCallback((targetId: string) => {
+    const sourceId = clockDraggingPanelRef.current;
+    clockDraggingPanelRef.current = null;
+    setClockDraggingPanel(null);
+    setClockDragOverPanel(null);
+    if (!sourceId || sourceId === targetId) return;
+    setClockPanelOrder(prev => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(sourceId);
+      const toIdx = next.indexOf(targetId);
+      if (fromIdx >= 0 && toIdx >= 0) {
+        next.splice(fromIdx, 1);
+        next.splice(toIdx, 0, sourceId);
+        localStorage.setItem('ct-clock-panel-order', JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
 
   const handlePanelDrop = useCallback((targetId: string) => {
     const sourceId = draggingPanelRef.current;
@@ -766,6 +794,14 @@ function App() {
                   ))}
                 </div>
               </div>
+
+              <div className="settings-row">
+                <span className="settings-row__label">Clock on right</span>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.clockPosition === 'right'} onChange={e => { const s = { ...settings, clockPosition: (e.target.checked ? 'right' : 'left') as AppSettings['clockPosition'] }; setSettings(s); debouncedPushSettings(s); }} />
+                  <span className="toggle-switch__track" aria-hidden="true" />
+                </label>
+              </div>
             </div>
 
             {/* Scheduling column (advanced only) */}
@@ -902,7 +938,7 @@ function App() {
         )}
       </div>
 
-      <main className="app-main">
+      <main className={`app-main${settings.clockPosition === 'right' ? ' app-main--clock-right' : ''}`}>
         <section className="clock-section">
           <ClockFace
             tasks={scheduledTasks}
@@ -921,86 +957,102 @@ function App() {
             onCalendarEventClick={(uid) => setActiveCalendarUid(prev => prev === uid ? null : uid)}
             onSlotsResolved={setClockColorMap}
           />
-          {calendarEvents.length > 0 && (
-            <div className="calendar-events">
-              <h3 className="calendar-events__heading">Calendar</h3>
-              <ul ref={calendarListRef} className="calendar-events__list">
-                {[...calendarEvents]
-                  .sort((a, b) => a.startMinutes - b.startMinutes)
-                  .map(event => {
-                    const startH = Math.floor(event.startMinutes / 60);
-                    const startM = event.startMinutes % 60;
-                    const endH = Math.floor(event.endMinutes / 60);
-                    const endM = event.endMinutes % 60;
-                    const timeStr = event.allDay
-                      ? 'All day'
-                      : `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}–${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
-                    return (
-                      <li
-                        key={event.uid}
-                        data-event-uid={event.uid}
-                        className={`calendar-events__item${event.uid === activeCalendarUid ? ' calendar-events__item--active' : ''}`}
-                      >
-                        <span className="calendar-events__time">{timeStr}</span>
-                        <span className="calendar-events__summary">{event.summary}</span>
-                      </li>
-                    );
-                  })}
-              </ul>
-            </div>
-          )}
-          {daySummary && (
-            <div className="day-summary">
-              <h3 className="day-summary__heading">Day breakdown</h3>
-              {daySummary.totalMinutes > 0 && (
-                <div className="day-summary__bar" aria-hidden="true">
-                  {daySummary.eventMinutes > 0 && (
-                    <div
-                      className="day-summary__bar-segment day-summary__bar-segment--events"
-                      style={{ flex: daySummary.eventMinutes }}
-                    />
-                  )}
-                  {daySummary.taskMinutes > 0 && (
-                    <div
-                      className="day-summary__bar-segment day-summary__bar-segment--tasks"
-                      style={{ flex: daySummary.taskMinutes }}
-                    />
-                  )}
-                  {daySummary.breakMinutes > 0 && (
-                    <div
-                      className="day-summary__bar-segment day-summary__bar-segment--breaks"
-                      style={{ flex: daySummary.breakMinutes }}
-                    />
-                  )}
+          {clockPanelOrder.map(panelId => {
+            if (panelId === 'calendar' && calendarEvents.length === 0) return null;
+            if (panelId === 'summary' && !daySummary) return null;
+            const clockDragHandle = (
+              <span className="panel-drag-handle" aria-hidden="true">
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                  <circle cx="3" cy="2.5" r="1.2" /><circle cx="7" cy="2.5" r="1.2" />
+                  <circle cx="3" cy="7" r="1.2" /><circle cx="7" cy="7" r="1.2" />
+                  <circle cx="3" cy="11.5" r="1.2" /><circle cx="7" cy="11.5" r="1.2" />
+                </svg>
+              </span>
+            );
+            return (
+              <div
+                key={panelId}
+                className={[
+                  'clock-panel',
+                  clockDraggingPanel === panelId && 'clock-panel--dragging',
+                  clockDragOverPanel === panelId && 'clock-panel--drag-over',
+                ].filter(Boolean).join(' ')}
+                draggable
+                onDragStart={(e) => { e.stopPropagation(); clockDraggingPanelRef.current = panelId; setClockDraggingPanel(panelId); e.dataTransfer.effectAllowed = 'move'; }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setClockDragOverPanel(panelId); }}
+                onDragEnd={() => { clockDraggingPanelRef.current = null; setClockDraggingPanel(null); setClockDragOverPanel(null); }}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleClockPanelDrop(panelId); }}
+              >
+                <div className="clock-panel__header">
+                  {clockDragHandle}
+                  <h3 className="clock-panel__title">
+                    {panelId === 'calendar' ? 'Calendar' : 'Day breakdown'}
+                  </h3>
                 </div>
-              )}
-              <ul className="day-summary__rows">
-                {daySummary.eventMinutes > 0 && (
-                  <li className="day-summary__row">
-                    <span className="day-summary__dot day-summary__dot--events" aria-hidden="true" />
-                    <span className="day-summary__label">Events</span>
-                    <span className="day-summary__value">{formatDuration(daySummary.eventMinutes)}</span>
-                  </li>
+                {panelId === 'calendar' && (
+                  <ul ref={calendarListRef} className="calendar-events__list clock-panel__body">
+                    {[...calendarEvents]
+                      .sort((a, b) => a.startMinutes - b.startMinutes)
+                      .map(event => {
+                        const startH = Math.floor(event.startMinutes / 60);
+                        const startM = event.startMinutes % 60;
+                        const endH = Math.floor(event.endMinutes / 60);
+                        const endM = event.endMinutes % 60;
+                        const timeStr = event.allDay
+                          ? 'All day'
+                          : `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}–${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+                        return (
+                          <li
+                            key={event.uid}
+                            data-event-uid={event.uid}
+                            className={`calendar-events__item${event.uid === activeCalendarUid ? ' calendar-events__item--active' : ''}`}
+                          >
+                            <span className="calendar-events__time">{timeStr}</span>
+                            <span className="calendar-events__summary">{event.summary}</span>
+                          </li>
+                        );
+                      })}
+                  </ul>
                 )}
-                <li className="day-summary__row">
-                  <span className="day-summary__dot day-summary__dot--tasks" aria-hidden="true" />
-                  <span className="day-summary__label">Tasks</span>
-                  <span className="day-summary__value">{formatDuration(daySummary.taskMinutes)}</span>
-                </li>
-                {daySummary.breakMinutes > 0 && (
-                  <li className="day-summary__row">
-                    <span className="day-summary__dot day-summary__dot--breaks" aria-hidden="true" />
-                    <span className="day-summary__label">Breaks</span>
-                    <span className="day-summary__value">{formatDuration(daySummary.breakMinutes)}</span>
-                  </li>
+                {panelId === 'summary' && daySummary && (
+                  <div className="clock-panel__body">
+                    {daySummary.totalMinutes > 0 && (
+                      <div className="day-summary__bar" aria-hidden="true">
+                        {daySummary.eventMinutes > 0 && <div className="day-summary__bar-segment day-summary__bar-segment--events" style={{ flex: daySummary.eventMinutes }} />}
+                        {daySummary.taskMinutes > 0 && <div className="day-summary__bar-segment day-summary__bar-segment--tasks" style={{ flex: daySummary.taskMinutes }} />}
+                        {daySummary.breakMinutes > 0 && <div className="day-summary__bar-segment day-summary__bar-segment--breaks" style={{ flex: daySummary.breakMinutes }} />}
+                      </div>
+                    )}
+                    <ul className="day-summary__rows">
+                      {daySummary.eventMinutes > 0 && (
+                        <li className="day-summary__row">
+                          <span className="day-summary__dot day-summary__dot--events" aria-hidden="true" />
+                          <span className="day-summary__label">Events</span>
+                          <span className="day-summary__value">{formatDuration(daySummary.eventMinutes)}</span>
+                        </li>
+                      )}
+                      <li className="day-summary__row">
+                        <span className="day-summary__dot day-summary__dot--tasks" aria-hidden="true" />
+                        <span className="day-summary__label">Tasks</span>
+                        <span className="day-summary__value">{formatDuration(daySummary.taskMinutes)}</span>
+                      </li>
+                      {daySummary.breakMinutes > 0 && (
+                        <li className="day-summary__row">
+                          <span className="day-summary__dot day-summary__dot--breaks" aria-hidden="true" />
+                          <span className="day-summary__label">Breaks</span>
+                          <span className="day-summary__value">{formatDuration(daySummary.breakMinutes)}</span>
+                        </li>
+                      )}
+                      <li className="day-summary__row day-summary__row--total">
+                        <span className="day-summary__label">Total</span>
+                        <span className="day-summary__value">{formatDuration(daySummary.totalMinutes)}</span>
+                      </li>
+                    </ul>
+                  </div>
                 )}
-                <li className="day-summary__row day-summary__row--total">
-                  <span className="day-summary__label">Total</span>
-                  <span className="day-summary__value">{formatDuration(daySummary.totalMinutes)}</span>
-                </li>
-              </ul>
-            </div>
-          )}
+              </div>
+            );
+          })}
         </section>
 
         <section className="sidebar">

@@ -65,6 +65,7 @@ export interface AppSettings {
   enableBacklog: boolean;
   showPomodoroTimer: boolean;
   showDaySummary: boolean;
+  clockPosition: 'left' | 'right';
   advancedMode: boolean;
 }
 
@@ -84,5 +85,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enableBacklog: false,
   showPomodoroTimer: false,
   showDaySummary: false,
+  clockPosition: 'left',
   advancedMode: false,
 };

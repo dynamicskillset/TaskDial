@@ -187,6 +187,7 @@ export function getDemoSettings(): AppSettings {
     enableBacklog: true,
     showPomodoroTimer: true,
     showDaySummary: false,
+    clockPosition: 'left',
     advancedMode: true,
   };
 }
