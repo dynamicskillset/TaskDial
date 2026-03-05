@@ -551,17 +551,6 @@ export default function TaskList({
     );
   }
 
-  if (allTasksDone) {
-    return (
-      <div className="task-list task-list--all-done">
-        <p className="task-list__all-done-message">All done for today.</p>
-        <ul ref={listRef} className="task-list__items task-list__items--done" role="list">
-          {sortedTasks.map((task) => renderItem(task))}
-        </ul>
-      </div>
-    );
-  }
-
   const renderItem = (task: ScheduledTask) => (
     <TaskItem
       key={task.id}
@@ -591,6 +580,17 @@ export default function TaskList({
       onDrop={handleDrop}
     />
   );
+
+  if (allTasksDone) {
+    return (
+      <div className="task-list task-list--all-done">
+        <p className="task-list__all-done-message">All done for today. ✓</p>
+        <ul ref={listRef} className="task-list__items task-list__items--done" role="list">
+          {sortedTasks.map((task) => renderItem(task))}
+        </ul>
+      </div>
+    );
+  }
 
   return (
     <div className="task-list">
