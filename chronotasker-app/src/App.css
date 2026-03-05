@@ -513,10 +513,12 @@
 
 .app-main--clock-right .clock-section {
   grid-column: 2;
+  grid-row: 1;
 }
 
 .app-main--clock-right .sidebar {
   grid-column: 1;
+  grid-row: 1;
 }
 
 .clock-section {
