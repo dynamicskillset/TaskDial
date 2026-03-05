@@ -54,7 +54,16 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} 'bash -s' <<'SCRIPT'
           set -e
           cd /opt/chronotasker/server
-          npm install --production
+          # Only run npm install if package-lock.json changed (avoids slow native recompile)
+          NEW_HASH=$(md5sum package-lock.json | cut -d' ' -f1)
+          OLD_HASH=$(cat .package-lock-hash 2>/dev/null || echo "")
+          if [ "$NEW_HASH" != "$OLD_HASH" ]; then
+            echo "package-lock.json changed, running npm install..."
+            npm install --production
+            echo "$NEW_HASH" > .package-lock-hash
+          else
+            echo "Dependencies unchanged, skipping npm install."
+          fi
           pm2 restart chronotasker
           pm2 save
           echo "=== Deploy complete ==="
