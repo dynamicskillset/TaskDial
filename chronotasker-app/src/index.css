@@ -6,6 +6,7 @@
   --color-text-secondary: #4C566A;
   --color-border: #D8DEE9;
   --color-accent: #5E81AC;
+  --color-accent-hue: 213;
   --color-accent-light: #E5E9F0;
   --color-success: #A3BE8C;
   --color-danger: #BF616A;
@@ -80,6 +81,7 @@
     --color-text-secondary: #D8DEE9;
     --color-border: #5E6A82;
     --color-accent: #88C0D0;
+    --color-accent-hue: 193;
     --color-accent-light: #3B4252;
     --color-task-important: hsl(0, 65%, 58%);
     --color-task-saturation: 55%;
@@ -121,6 +123,7 @@
   --color-text-secondary: #D8DEE9;
   --color-border: #5E6A82;
   --color-accent: #88C0D0;
+  --color-accent-hue: 193;
   --color-accent-light: #3B4252;
   --color-task-important: hsl(0, 65%, 58%);
   --color-task-saturation: 55%;
@@ -160,6 +163,7 @@
   --color-text-secondary: #4C566A;
   --color-border: #D8DEE9;
   --color-accent: #5E81AC;
+  --color-accent-hue: 213;
   --color-accent-light: #E5E9F0;
   --color-task-important: hsl(0, 72%, 62%);
   --color-task-saturation: 62%;
@@ -270,6 +274,7 @@ h1, h2, h3 {
 /* ── Colour scheme: Aurora ── */
 .scheme-aurora {
   --color-accent: #A5563A;
+  --color-accent-hue: 16;
   --color-active-border: #A5563A;
   --color-input-focus: #A5563A;
   --color-pill-active-bg: #A5563A;
@@ -278,6 +283,7 @@ h1, h2, h3 {
 }
 .dark.scheme-aurora {
   --color-accent: #D08770;
+  --color-accent-hue: 16;
   --color-active-border: #D08770;
   --color-input-focus: #D08770;
   --color-pill-active-bg: #B86848;
@@ -287,6 +293,7 @@ h1, h2, h3 {
 @media (prefers-color-scheme: dark) {
   .scheme-aurora:not(.light):not(.dark) {
     --color-accent: #D08770;
+    --color-accent-hue: 16;
     --color-active-border: #D08770;
     --color-input-focus: #D08770;
     --color-pill-active-bg: #B86848;
@@ -298,6 +305,7 @@ h1, h2, h3 {
 /* ── Colour scheme: Frost ── */
 .scheme-frost {
   --color-accent: #3B7877;
+  --color-accent-hue: 179;
   --color-active-border: #3B7877;
   --color-input-focus: #3B7877;
   --color-pill-active-bg: #3B7877;
@@ -306,6 +314,7 @@ h1, h2, h3 {
 }
 .dark.scheme-frost {
   --color-accent: #8FBCBB;
+  --color-accent-hue: 179;
   --color-active-border: #8FBCBB;
   --color-input-focus: #8FBCBB;
   --color-pill-active-bg: #4E8A89;
@@ -315,6 +324,7 @@ h1, h2, h3 {
 @media (prefers-color-scheme: dark) {
   .scheme-frost:not(.light):not(.dark) {
     --color-accent: #8FBCBB;
+    --color-accent-hue: 179;
     --color-active-border: #8FBCBB;
     --color-input-focus: #8FBCBB;
     --color-pill-active-bg: #4E8A89;
@@ -326,6 +336,7 @@ h1, h2, h3 {
 /* ── Colour scheme: Evergreen ── */
 .scheme-evergreen {
   --color-accent: #4E6E3A;
+  --color-accent-hue: 97;
   --color-active-border: #4E6E3A;
   --color-input-focus: #4E6E3A;
   --color-pill-active-bg: #4E6E3A;
@@ -334,6 +345,7 @@ h1, h2, h3 {
 }
 .dark.scheme-evergreen {
   --color-accent: #A3BE8C;
+  --color-accent-hue: 92;
   --color-active-border: #A3BE8C;
   --color-input-focus: #A3BE8C;
   --color-pill-active-bg: #608046;
@@ -343,6 +355,7 @@ h1, h2, h3 {
 @media (prefers-color-scheme: dark) {
   .scheme-evergreen:not(.light):not(.dark) {
     --color-accent: #A3BE8C;
+    --color-accent-hue: 92;
     --color-active-border: #A3BE8C;
     --color-input-focus: #A3BE8C;
     --color-pill-active-bg: #608046;
@@ -354,6 +367,7 @@ h1, h2, h3 {
 /* ── Colour scheme: Berry ── */
 .scheme-berry {
   --color-accent: #855C7D;
+  --color-accent-hue: 312;
   --color-active-border: #855C7D;
   --color-input-focus: #855C7D;
   --color-pill-active-bg: #855C7D;
@@ -362,6 +376,7 @@ h1, h2, h3 {
 }
 .dark.scheme-berry {
   --color-accent: #B48EAD;
+  --color-accent-hue: 311;
   --color-active-border: #B48EAD;
   --color-input-focus: #B48EAD;
   --color-pill-active-bg: #926587;
@@ -371,6 +386,7 @@ h1, h2, h3 {
 @media (prefers-color-scheme: dark) {
   .scheme-berry:not(.light):not(.dark) {
     --color-accent: #B48EAD;
+    --color-accent-hue: 311;
     --color-active-border: #B48EAD;
     --color-input-focus: #B48EAD;
     --color-pill-active-bg: #926587;

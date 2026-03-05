@@ -163,8 +163,9 @@ const TaskItem = memo(function TaskItem({
         .filter(Boolean)
         .join(' ')}
       style={arcColor ? { '--task-color': arcColor } as React.CSSProperties : undefined}
-      draggable={!task.completed}
+      draggable={!task.completed && !task.isBreak}
       onDragStart={(e) => {
+        e.stopPropagation();
         e.dataTransfer.effectAllowed = 'move';
         onDragStart(task.id);
       }}
@@ -180,6 +181,16 @@ const TaskItem = memo(function TaskItem({
         }
       }}
     >
+      {/* Drag handle (desktop only) */}
+      {!task.completed && !task.isBreak && (
+        <div className="task-list__drag-handle" aria-hidden="true">
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+            <circle cx="3" cy="2.5" r="1.2" /><circle cx="7" cy="2.5" r="1.2" />
+            <circle cx="3" cy="7" r="1.2" /><circle cx="7" cy="7" r="1.2" />
+            <circle cx="3" cy="11.5" r="1.2" /><circle cx="7" cy="11.5" r="1.2" />
+          </svg>
+        </div>
+      )}
       {/* Checkbox */}
       <button
         className="task-list__checkbox"

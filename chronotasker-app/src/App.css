@@ -766,6 +766,36 @@
   padding: 0;
 }
 
+/* Panel drag handle (inside section header buttons) */
+.panel-drag-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.collapsible-section:hover .panel-drag-handle {
+  opacity: 0.4;
+}
+
+.collapsible-section--dragging {
+  opacity: 0.45;
+}
+
+.collapsible-section--drag-over {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+@media (hover: none) {
+  .panel-drag-handle {
+    display: none;
+  }
+}
+
 /* Remove the form's own border when inside a collapsible section */
 .collapsible-section__body .task-form {
   border: none;

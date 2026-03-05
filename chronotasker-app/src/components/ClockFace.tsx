@@ -102,14 +102,39 @@ function describeArc(
 }
 
 /**
+ * Read the accent hue from the CSS custom property --color-accent-hue.
+ * Falls back to 210 (Nord blue) if not set.
+ */
+function getAccentHue(): number {
+  const h = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--color-accent-hue'),
+  );
+  return isNaN(h) ? 210 : h;
+}
+
+/**
+ * Shift a hue away from the accent hue if it falls within `clearance` degrees.
+ */
+function shiftFromAccent(hue: number, accentHue: number, clearance = 40): number {
+  const diff = ((hue - accentHue + 180 + 360) % 360) - 180;
+  if (Math.abs(diff) < clearance) {
+    return (accentHue + (diff >= 0 ? clearance : -clearance) + 360) % 360;
+  }
+  return hue;
+}
+
+/**
  * Generate a pastel HSL colour for a task arc.
  * If the task has a tag, use a deterministic colour from the tag.
  * Otherwise, fall back to index-based colour distribution.
+ * In both cases, hues too close to the accent colour are shifted away.
  */
 function taskColor(index: number, total: number, tag?: string): string {
-  const hue = tag
+  const accentHue = getAccentHue();
+  const raw = tag
     ? tagHue(tag)
     : (index * (360 / Math.max(total, 1)) + 200) % 360;
+  const hue = shiftFromAccent(raw, accentHue);
   return `hsl(${hue}, var(--color-task-saturation, 62%), var(--color-task-lightness, 68%))`;
 }
 

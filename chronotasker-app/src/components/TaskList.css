@@ -315,6 +315,31 @@
 }
 
 /* ============================================================
+   Drag handle
+   ============================================================ */
+.task-list__drag-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  color: var(--tl-text-muted);
+  opacity: 0;
+  cursor: grab;
+  transition: opacity var(--transition-fast);
+}
+
+.task-list__item:hover .task-list__drag-handle,
+.task-list__item:focus-within .task-list__drag-handle {
+  opacity: 0.4;
+}
+
+.task-list__item--dragging .task-list__drag-handle {
+  cursor: grabbing;
+  opacity: 0.6;
+}
+
+/* ============================================================
    Action buttons (reorder, edit, delete)
    ============================================================ */
 .task-list__actions {
@@ -331,9 +356,9 @@
   opacity: 1;
 }
 
-/* Reorder buttons */
+/* Reorder buttons — hidden on desktop (use drag-and-drop instead) */
 .task-list__reorder {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 0;
 }
@@ -519,6 +544,7 @@
     opacity: 1;
   }
 
+  /* On touch devices, use up/down buttons instead of drag */
   .task-list__reorder {
     display: flex;
   }
@@ -533,6 +559,11 @@
   .task-list__reschedule-btn {
     width: 44px;
     height: 44px;
+  }
+
+  /* Hide drag handle on touch devices */
+  .task-list__drag-handle {
+    display: none;
   }
 }
 

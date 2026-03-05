@@ -22,7 +22,7 @@
   --clock-working-day-fill: var(--color-bg);
   --clock-working-day-opacity: 1;
   --clock-break-bg: color-mix(in srgb, var(--color-border) 35%, var(--color-bg));
-  --clock-calendar-fill: var(--color-calendar, #B48EAD);
+  --clock-calendar-fill: var(--color-accent);
   --clock-calendar-opacity: 0.7;
 }
 

@@ -59,6 +59,15 @@ function App() {
     activeTaskId: string | null;
   } | null>(null);
 
+  // Panel drag-to-reorder (advanced mode only, order persisted to localStorage)
+  const [panelOrder, setPanelOrder] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('ct-panel-order') || 'null') ?? ['timer', 'form', 'tasks', 'backlog']; }
+    catch { return ['timer', 'form', 'tasks', 'backlog']; }
+  });
+  const draggingPanelRef = useRef<string | null>(null);
+  const [draggingPanel, setDraggingPanel] = useState<string | null>(null);
+  const [dragOverPanel, setDragOverPanel] = useState<string | null>(null);
+
   // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -394,6 +403,25 @@ function App() {
     });
   }, [pushTask]);
 
+  const handlePanelDrop = useCallback((targetId: string) => {
+    const sourceId = draggingPanelRef.current;
+    draggingPanelRef.current = null;
+    setDraggingPanel(null);
+    setDragOverPanel(null);
+    if (!sourceId || sourceId === targetId) return;
+    setPanelOrder(prev => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(sourceId);
+      const toIdx = next.indexOf(targetId);
+      if (fromIdx >= 0 && toIdx >= 0) {
+        next.splice(fromIdx, 1);
+        next.splice(toIdx, 0, sourceId);
+        localStorage.setItem('ct-panel-order', JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
   const handleApplyReorg = useCallback(() => {
     if (suggestedOrdering) handleReorderAll(suggestedOrdering);
     setReorgDismissed(true);
@@ -708,11 +736,13 @@ function App() {
               <div className="settings-row">
                 <span className="settings-row__label">Day hours</span>
                 <div className="settings-row__control--inline">
-                  <input type="time" className="settings-time-input" value={`${String(settings.dayStartHour).padStart(2, '0')}:00`}
-                    onChange={e => { const h = parseInt(e.target.value.split(':')[0], 10); if (!isNaN(h)) { const s = { ...settings, dayStartHour: h }; setSettings(s); debouncedPushSettings(s); } }} />
+                  <input type="time" className="settings-time-input"
+                    value={`${String(Math.floor(settings.dayStartHour)).padStart(2, '0')}:${String(Math.round((settings.dayStartHour % 1) * 60)).padStart(2, '0')}`}
+                    onChange={e => { const [h, m] = e.target.value.split(':').map(Number); if (!isNaN(h)) { const s = { ...settings, dayStartHour: h + (m || 0) / 60 }; setSettings(s); debouncedPushSettings(s); } }} />
                   <span className="settings-row__sep">to</span>
-                  <input type="time" className="settings-time-input" value={`${String(settings.dayEndHour).padStart(2, '0')}:00`}
-                    onChange={e => { const h = parseInt(e.target.value.split(':')[0], 10); if (!isNaN(h)) { const s = { ...settings, dayEndHour: h }; setSettings(s); debouncedPushSettings(s); } }} />
+                  <input type="time" className="settings-time-input"
+                    value={`${String(Math.floor(settings.dayEndHour)).padStart(2, '0')}:${String(Math.round((settings.dayEndHour % 1) * 60)).padStart(2, '0')}`}
+                    onChange={e => { const [h, m] = e.target.value.split(':').map(Number); if (!isNaN(h)) { const s = { ...settings, dayEndHour: h + (m || 0) / 60 }; setSettings(s); debouncedPushSettings(s); } }} />
                 </div>
               </div>
 
@@ -974,205 +1004,219 @@ function App() {
         </section>
 
         <section className="sidebar">
-          {/* Collapsible Pomodoro Timer */}
-          {settings.advancedMode && settings.showPomodoroTimer && (
-            <div className="collapsible-section">
-              <button
-                className="collapsible-section__header"
-                onClick={() => setShowTimer(!showTimer)}
-                aria-expanded={showTimer}
-              >
-                <svg className={`collapsible-section__chevron ${showTimer ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="collapsible-section__title">Pomodoro Timer</span>
-                {!showTimer && pomodoroState.isRunning && (
-                  <span className={`collapsible-section__summary collapsible-section__summary--${pomodoroState.type}`}>
-                    {pomodoroState.type === 'work' ? 'Focus' : pomodoroState.type === 'shortBreak' ? 'Break' : 'Long Break'}
-                    {' '}
-                    {String(Math.floor(pomodoroState.timeRemainingSeconds / 60)).padStart(2, '0')}:{String(pomodoroState.timeRemainingSeconds % 60).padStart(2, '0')}
-                  </span>
-                )}
-              </button>
-              {showTimer && (
-                <div className="collapsible-section__body">
-                  <PomodoroTimer
-                    state={pomodoroState}
-                    onStart={(taskId) => {
-                      const task = taskId ? tasks.find(t => t.id === taskId) : undefined;
-                      const override = task && task.durationMinutes < settings.workDuration
-                        ? task.durationMinutes
-                        : undefined;
-                      pomodoro.start(taskId ?? undefined, override);
-                    }}
-                    onPause={pomodoro.pause}
-                    onResume={pomodoro.resume}
-                    onSkip={pomodoro.skip}
-                    onReset={pomodoro.reset}
-                    currentTaskTitle={tasks.find(t => t.id === activeTaskId)?.title}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Task Form */}
           {settings.advancedMode ? (
-            <div className="collapsible-section">
-              <button
-                className="collapsible-section__header"
-                onClick={() => setShowForm(!showForm)}
-                aria-expanded={showForm}
-              >
-                <svg className={`collapsible-section__chevron ${showForm ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="collapsible-section__title">{editingTask ? 'Edit task' : 'Add task or break'}</span>
-              </button>
-              {showForm && (
-                <div className="collapsible-section__body">
-                  <TaskForm
-                    onSubmit={editingTask ? handleUpdateTask : handleAddTask}
-                    editingTask={editingTask}
-                    onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
-                    date={date}
-                    existingTags={[...new Set(tasks.map(t => t.tag).filter((t): t is string => !!t))]}
-                    calendarEvents={calendarEvents}
-                    meetingBufferMinutes={settings.meetingBufferMinutes}
-                    use24Hour={settings.use24Hour}
-                    enableRecurring={settings.enableRecurringTasks}
-                    enableBacklog={settings.enableBacklog}
-                    onSubmitToBacklog={handleAddToBacklog}
-                    onMoveToBacklog={handleMoveToBacklog}
-                    advancedMode={settings.advancedMode}
-                  />
-                  <BreakForm onSubmit={handleAddTask} date={date} />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="sidebar-section">
-              <TaskForm
-                onSubmit={editingTask ? handleUpdateTask : handleAddTask}
-                editingTask={editingTask}
-                onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
-                date={date}
-                existingTags={[...new Set(tasks.map(t => t.tag).filter((t): t is string => !!t))]}
-                calendarEvents={calendarEvents}
-                meetingBufferMinutes={settings.meetingBufferMinutes}
-                use24Hour={settings.use24Hour}
-                enableRecurring={settings.enableRecurringTasks}
-                enableBacklog={settings.enableBacklog}
-                onSubmitToBacklog={handleAddToBacklog}
-                onMoveToBacklog={handleMoveToBacklog}
-                advancedMode={settings.advancedMode}
-              />
-              <BreakForm onSubmit={handleAddTask} date={date} />
-            </div>
-          )}
-
-          {/* Task List */}
-          {settings.advancedMode ? (
-            <div className="collapsible-section">
-              <button
-                className="collapsible-section__header"
-                onClick={() => setShowTaskList(!showTaskList)}
-                aria-expanded={showTaskList}
-              >
-                <svg className={`collapsible-section__chevron ${showTaskList ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="collapsible-section__title">Tasks</span>
-                {!showTaskList && (
-                  <span className="collapsible-section__count">
-                    {tasks.filter(t => !t.completed).length} remaining
-                  </span>
-                )}
-              </button>
-              {showTaskList && (
-                <div className="collapsible-section__body collapsible-section__body--flush">
-                  {showReorgBanner && (
-                    <div className="reorg-banner" role="status">
-                      <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
-                      <div className="reorg-banner__actions">
-                        <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
-                        <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
-                      </div>
-                    </div>
+            // Advanced mode: panels rendered in user-defined order, draggable to reorder
+            panelOrder.map(panelId => {
+              if (panelId === 'timer' && !settings.showPomodoroTimer) return null;
+              if (panelId === 'backlog' && !settings.enableBacklog) return null;
+              const dragHandle = (
+                <span className="panel-drag-handle" aria-hidden="true">
+                  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                    <circle cx="3" cy="2.5" r="1.2" /><circle cx="7" cy="2.5" r="1.2" />
+                    <circle cx="3" cy="7" r="1.2" /><circle cx="7" cy="7" r="1.2" />
+                    <circle cx="3" cy="11.5" r="1.2" /><circle cx="7" cy="11.5" r="1.2" />
+                  </svg>
+                </span>
+              );
+              return (
+                <div
+                  key={panelId}
+                  className={[
+                    'collapsible-section',
+                    draggingPanel === panelId && 'collapsible-section--dragging',
+                    dragOverPanel === panelId && 'collapsible-section--drag-over',
+                  ].filter(Boolean).join(' ')}
+                  draggable
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+                    draggingPanelRef.current = panelId;
+                    setDraggingPanel(panelId);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverPanel(panelId); }}
+                  onDragEnd={() => { draggingPanelRef.current = null; setDraggingPanel(null); setDragOverPanel(null); }}
+                  onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handlePanelDrop(panelId); }}
+                >
+                  {panelId === 'timer' && (
+                    <>
+                      <button className="collapsible-section__header" onClick={() => setShowTimer(!showTimer)} aria-expanded={showTimer}>
+                        {dragHandle}
+                        <svg className={`collapsible-section__chevron ${showTimer ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="collapsible-section__title">Pomodoro Timer</span>
+                        {!showTimer && pomodoroState.isRunning && (
+                          <span className={`collapsible-section__summary collapsible-section__summary--${pomodoroState.type}`}>
+                            {pomodoroState.type === 'work' ? 'Focus' : pomodoroState.type === 'shortBreak' ? 'Break' : 'Long Break'}
+                            {' '}
+                            {String(Math.floor(pomodoroState.timeRemainingSeconds / 60)).padStart(2, '0')}:{String(pomodoroState.timeRemainingSeconds % 60).padStart(2, '0')}
+                          </span>
+                        )}
+                      </button>
+                      {showTimer && (
+                        <div className="collapsible-section__body">
+                          <PomodoroTimer
+                            state={pomodoroState}
+                            onStart={(taskId) => {
+                              const task = taskId ? tasks.find(t => t.id === taskId) : undefined;
+                              const override = task && task.durationMinutes < settings.workDuration ? task.durationMinutes : undefined;
+                              pomodoro.start(taskId ?? undefined, override);
+                            }}
+                            onPause={pomodoro.pause}
+                            onResume={pomodoro.resume}
+                            onSkip={pomodoro.skip}
+                            onReset={pomodoro.reset}
+                            currentTaskTitle={tasks.find(t => t.id === activeTaskId)?.title}
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
-                  <TaskList
-                    tasks={tasksWithScheduleInfo}
-                    colorMap={clockColorMap}
-                    activeTaskId={activeTaskId}
-                    onToggleComplete={handleToggleComplete}
-                    onToggleImportant={handleToggleImportant}
-                    onDeleteTask={handleDeleteTask}
-                    onEditTask={setEditingTask}
-                    onReorder={handleReorder}
-                    onReorderAll={handleReorderAll}
-                    onSelectTask={setActiveTaskId}
-                    onRescheduleTask={handleRescheduleTask}
-                    onMoveAllToTomorrow={handleMoveAllToTomorrow}
-                  />
+                  {panelId === 'form' && (
+                    <>
+                      <button className="collapsible-section__header" onClick={() => setShowForm(!showForm)} aria-expanded={showForm}>
+                        {dragHandle}
+                        <svg className={`collapsible-section__chevron ${showForm ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="collapsible-section__title">{editingTask ? 'Edit task' : 'Add task or break'}</span>
+                      </button>
+                      {showForm && (
+                        <div className="collapsible-section__body">
+                          <TaskForm
+                            onSubmit={editingTask ? handleUpdateTask : handleAddTask}
+                            editingTask={editingTask}
+                            onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
+                            date={date}
+                            existingTags={[...new Set(tasks.map(t => t.tag).filter((t): t is string => !!t))]}
+                            calendarEvents={calendarEvents}
+                            meetingBufferMinutes={settings.meetingBufferMinutes}
+                            use24Hour={settings.use24Hour}
+                            enableRecurring={settings.enableRecurringTasks}
+                            enableBacklog={settings.enableBacklog}
+                            onSubmitToBacklog={handleAddToBacklog}
+                            onMoveToBacklog={handleMoveToBacklog}
+                            advancedMode={settings.advancedMode}
+                          />
+                          <BreakForm onSubmit={handleAddTask} date={date} />
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {panelId === 'tasks' && (
+                    <>
+                      <button className="collapsible-section__header" onClick={() => setShowTaskList(!showTaskList)} aria-expanded={showTaskList}>
+                        {dragHandle}
+                        <svg className={`collapsible-section__chevron ${showTaskList ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="collapsible-section__title">Tasks</span>
+                        {!showTaskList && (
+                          <span className="collapsible-section__count">{tasks.filter(t => !t.completed).length} remaining</span>
+                        )}
+                      </button>
+                      {showTaskList && (
+                        <div className="collapsible-section__body collapsible-section__body--flush">
+                          {showReorgBanner && (
+                            <div className="reorg-banner" role="status">
+                              <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
+                              <div className="reorg-banner__actions">
+                                <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
+                                <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
+                              </div>
+                            </div>
+                          )}
+                          <TaskList
+                            tasks={tasksWithScheduleInfo}
+                            colorMap={clockColorMap}
+                            activeTaskId={activeTaskId}
+                            onToggleComplete={handleToggleComplete}
+                            onToggleImportant={handleToggleImportant}
+                            onDeleteTask={handleDeleteTask}
+                            onEditTask={setEditingTask}
+                            onReorder={handleReorder}
+                            onReorderAll={handleReorderAll}
+                            onSelectTask={setActiveTaskId}
+                            onRescheduleTask={handleRescheduleTask}
+                            onMoveAllToTomorrow={handleMoveAllToTomorrow}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {panelId === 'backlog' && (
+                    <>
+                      <button className="collapsible-section__header" onClick={() => setShowBacklog(!showBacklog)} aria-expanded={showBacklog}>
+                        {dragHandle}
+                        <svg className={`collapsible-section__chevron ${showBacklog ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="collapsible-section__title">Backlog</span>
+                        {!showBacklog && (
+                          <span className="collapsible-section__count">{backlogTasks.length} task{backlogTasks.length !== 1 ? 's' : ''}</span>
+                        )}
+                      </button>
+                      {showBacklog && (
+                        <div className="collapsible-section__body collapsible-section__body--flush">
+                          <BacklogList
+                            tasks={backlogTasks}
+                            onAssignToToday={handleAssignBacklogToDate}
+                            onEditTask={handleEditBacklogTask}
+                            onDeleteTask={handleDeleteBacklogTask}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })
           ) : (
-            <div className="sidebar-section sidebar-section--flush">
-              {showReorgBanner && (
-                <div className="reorg-banner" role="status">
-                  <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
-                  <div className="reorg-banner__actions">
-                    <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
-                    <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
+            // Simple mode: no panel reordering
+            <>
+              <div className="sidebar-section">
+                <TaskForm
+                  onSubmit={editingTask ? handleUpdateTask : handleAddTask}
+                  editingTask={editingTask}
+                  onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
+                  date={date}
+                  existingTags={[...new Set(tasks.map(t => t.tag).filter((t): t is string => !!t))]}
+                  calendarEvents={calendarEvents}
+                  meetingBufferMinutes={settings.meetingBufferMinutes}
+                  use24Hour={settings.use24Hour}
+                  enableRecurring={settings.enableRecurringTasks}
+                  enableBacklog={settings.enableBacklog}
+                  onSubmitToBacklog={handleAddToBacklog}
+                  onMoveToBacklog={handleMoveToBacklog}
+                  advancedMode={settings.advancedMode}
+                />
+                <BreakForm onSubmit={handleAddTask} date={date} />
+              </div>
+              <div className="sidebar-section sidebar-section--flush">
+                {showReorgBanner && (
+                  <div className="reorg-banner" role="status">
+                    <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>
+                    <div className="reorg-banner__actions">
+                      <button className="reorg-banner__action" onClick={handleApplyReorg}>Reorganise</button>
+                      <button className="reorg-banner__dismiss" onClick={() => setReorgDismissed(true)} aria-label="Dismiss suggestion">✕</button>
+                    </div>
                   </div>
-                </div>
-              )}
-              <TaskList
-                tasks={tasksWithScheduleInfo}
-                colorMap={clockColorMap}
-                activeTaskId={activeTaskId}
-                onToggleComplete={handleToggleComplete}
-                onToggleImportant={handleToggleImportant}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={setEditingTask}
-                onReorder={handleReorder}
-                onReorderAll={handleReorderAll}
-                onSelectTask={setActiveTaskId}
-                onMoveAllToTomorrow={handleMoveAllToTomorrow}
-              />
-            </div>
-          )}
-
-          {/* Collapsible Backlog (only when advanced + enabled) */}
-          {settings.advancedMode && settings.enableBacklog && (
-            <div className="collapsible-section">
-              <button
-                className="collapsible-section__header"
-                onClick={() => setShowBacklog(!showBacklog)}
-                aria-expanded={showBacklog}
-              >
-                <svg className={`collapsible-section__chevron ${showBacklog ? 'collapsible-section__chevron--open' : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="collapsible-section__title">Backlog</span>
-                {!showBacklog && (
-                  <span className="collapsible-section__count">
-                    {backlogTasks.length} task{backlogTasks.length !== 1 ? 's' : ''}
-                  </span>
                 )}
-              </button>
-              {showBacklog && (
-                <div className="collapsible-section__body collapsible-section__body--flush">
-                  <BacklogList
-                    tasks={backlogTasks}
-                    onAssignToToday={handleAssignBacklogToDate}
-                    onEditTask={handleEditBacklogTask}
-                    onDeleteTask={handleDeleteBacklogTask}
-                  />
-                </div>
-              )}
-            </div>
+                <TaskList
+                  tasks={tasksWithScheduleInfo}
+                  colorMap={clockColorMap}
+                  activeTaskId={activeTaskId}
+                  onToggleComplete={handleToggleComplete}
+                  onToggleImportant={handleToggleImportant}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={setEditingTask}
+                  onReorder={handleReorder}
+                  onReorderAll={handleReorderAll}
+                  onSelectTask={setActiveTaskId}
+                  onMoveAllToTomorrow={handleMoveAllToTomorrow}
+                />
+              </div>
+            </>
           )}
         </section>
       </main>
