@@ -16,13 +16,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: chronotasker-app/package-lock.json
+          cache-dependency-path: |
+            chronotasker-app/package-lock.json
+            server/package-lock.json
 
       - name: Build frontend
         env:
           VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
         run: |
           cd chronotasker-app
+          npm ci
+          npm run build
+
+      - name: Build server
+        run: |
+          cd server
           npm ci
           npm run build
 
@@ -36,27 +44,17 @@ jobs:
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" chronotasker-app/dist/ root@${{ secrets.VPS_HOST }}:/opt/chronotasker/frontend/
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} 'cp -r /opt/chronotasker/frontend/* /opt/ghost/sites/chronotasker/'
 
-      - name: Build server and restart on VPS
+      - name: Deploy server to VPS
+        run: |
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" server/dist/ root@${{ secrets.VPS_HOST }}:/opt/chronotasker/server/dist/
+          rsync -az -e "ssh -o StrictHostKeyChecking=no" server/package.json server/package-lock.json root@${{ secrets.VPS_HOST }}:/opt/chronotasker/server/
+
+      - name: Install dependencies and restart on VPS
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} 'bash -s' <<'SCRIPT'
           set -e
-          cd /opt/chronotasker/repo
-          git fetch origin main
-          git reset --hard origin/main
-
-          # Build server
-          cd /opt/chronotasker/repo/server
-          npm install
-          npm run build
-
-          # Deploy server
-          rsync -a --delete /opt/chronotasker/repo/server/dist/ /opt/chronotasker/server/dist/
-          cp /opt/chronotasker/repo/server/package.json /opt/chronotasker/server/package.json
-          cp /opt/chronotasker/repo/server/package-lock.json /opt/chronotasker/server/package-lock.json 2>/dev/null || true
           cd /opt/chronotasker/server
           npm install --production
-
-          # Restart
           pm2 restart chronotasker
           pm2 save
           echo "=== Deploy complete ==="
