@@ -326,8 +326,15 @@ function App() {
       ...taskData,
       updatedAt: new Date().toISOString(),
     };
-    setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
-    pushTask('update', updated);
+    if (editingTask.date === 'backlog') {
+      // Keep it in the backlog — preserve backlog date regardless of what TaskForm sent
+      const backlogUpdated = { ...updated, date: 'backlog' };
+      setBacklogTasks(prev => prev.map(t => t.id === backlogUpdated.id ? backlogUpdated : t));
+      pushTask('update', backlogUpdated);
+    } else {
+      setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+      pushTask('update', updated);
+    }
     setEditingTask(undefined);
   }, [editingTask, pushTask]);
 

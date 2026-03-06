@@ -58,12 +58,11 @@
 .backlog-list__title {
   font-size: 0.9rem;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  flex-wrap: wrap;
+  word-break: break-word;
 }
 
 .backlog-list__tag {
