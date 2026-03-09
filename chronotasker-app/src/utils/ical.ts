@@ -390,21 +390,49 @@ function dateToLocal(d: Date): { date: string; minutes: number } {
 }
 
 /**
+ * Get the UTC offset in ms for a named timezone at a given UTC instant.
+ * Positive = east of UTC (e.g. UTC+5 returns +5*3600000).
+ */
+function getUtcOffsetMs(tzid: string, utcMs: number): number {
+  const d = new Date(utcMs);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tzid,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+
+  const p: Record<string, number> = {};
+  for (const part of parts) {
+    if (part.type !== 'literal') p[part.type] = parseInt(part.value, 10);
+  }
+  // hour12:false can return 24 for midnight — normalise
+  const h = (p.hour ?? 0) % 24;
+  const tzMs = Date.UTC(p.year, p.month - 1, p.day, h, p.minute, p.second);
+  return tzMs - utcMs;
+}
+
+/**
  * Convert a datetime from a named timezone to the user's local time.
- * Uses Intl offset trick: find the timezone's UTC offset, then create a proper UTC Date.
+ * Uses Intl.DateTimeFormat.formatToParts to determine the true UTC offset,
+ * avoiding the double-local-offset bug in toLocaleString + new Date().
  */
 function convertFromTzid(
   year: string, month: string, day: string,
   hour: string, minute: string, tzid: string,
 ): Date | null {
   try {
-    // 1. Treat the time as if it were UTC
-    const assumedUtc = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`);
-    // 2. Format that UTC instant in the target timezone to find the offset
-    const inTz = new Date(assumedUtc.toLocaleString('en-US', { timeZone: tzid }));
-    const offsetMs = inTz.getTime() - assumedUtc.getTime();
-    // 3. The actual UTC time is the assumed time minus the offset
-    return new Date(assumedUtc.getTime() - offsetMs);
+    // Treat the wall clock time as UTC for an initial estimate
+    const naiveUtcMs = Date.UTC(
+      parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10),
+      parseInt(hour, 10), parseInt(minute, 10), 0,
+    );
+    // Get the tz offset at the approximate UTC instant, then iterate once
+    // to handle DST edge cases where the initial estimate crosses a boundary
+    const offsetMs = getUtcOffsetMs(tzid, naiveUtcMs);
+    const approxUtcMs = naiveUtcMs - offsetMs;
+    const finalOffsetMs = getUtcOffsetMs(tzid, approxUtcMs);
+    return new Date(naiveUtcMs - finalOffsetMs);
   } catch {
     // Invalid TZID — fall back to treating as local
     return null;

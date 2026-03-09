@@ -734,6 +734,7 @@ function App() {
           >
             ?
           </button>
+          <span className="app-version" aria-label={`Version ${APP_VERSION}`}>v{APP_VERSION}</span>
         </div>
         <div className="header-status">
           <span className={`sync-indicator ${demoMode ? 'demo' : isOnline ? 'online' : 'offline'}`} aria-live="polite">

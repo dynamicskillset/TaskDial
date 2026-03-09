@@ -308,6 +308,14 @@
   outline-offset: 2px;
 }
 
+.app-version {
+  font-size: 0.65rem;
+  opacity: 0.4;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary, var(--color-text));
+  user-select: none;
+}
+
 /* ============================================================
    Responsive
    ============================================================ */
