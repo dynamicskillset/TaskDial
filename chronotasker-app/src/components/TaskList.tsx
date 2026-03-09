@@ -19,6 +19,8 @@ interface TaskListProps {
   onSelectTask: (taskId: string) => void;
   onRescheduleTask?: (taskId: string, newDate: string) => void;
   onMoveAllToTomorrow?: () => void;
+  isFirstVisit?: boolean;
+  onTryDemo?: () => void;
 }
 
 /** Lightweight markdown: bold, italic, code, [links](url), bare URLs */
@@ -333,7 +335,7 @@ const TaskItem = memo(function TaskItem({
               </svg>
             </button>
             {isRescheduling && (
-              <div className="task-list__reschedule-popover" role="dialog" aria-label="Reschedule task" onClick={(e) => e.stopPropagation()}>
+              <div className="task-list__reschedule-popover" role="dialog" aria-label="Reschedule task" aria-modal="true" onClick={(e) => e.stopPropagation()}>
                 <button
                   className="task-list__reschedule-tomorrow"
                   autoFocus
@@ -414,6 +416,8 @@ export default function TaskList({
   onSelectTask,
   onRescheduleTask,
   onMoveAllToTomorrow,
+  isFirstVisit,
+  onTryDemo,
 }: TaskListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -553,6 +557,23 @@ export default function TaskList({
   }, [draggingId, tasks, onReorderAll]);
 
   if (tasks.length === 0) {
+    if (isFirstVisit) {
+      return (
+        <div className="task-list task-list--empty task-list--onboarding">
+          <p className="task-list__onboarding-heading">Plan your day visually</p>
+          <ul className="task-list__onboarding-tips">
+            <li>Add tasks above — they appear as arcs on the clock</li>
+            <li>Set a fixed time to pin a task to a specific hour</li>
+            <li>Start the Pomodoro timer on any task to focus</li>
+          </ul>
+          {onTryDemo && (
+            <button className="task-list__try-demo" onClick={onTryDemo}>
+              Try demo mode
+            </button>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="task-list task-list--empty">
         <p className="task-list__empty-message">Nothing scheduled yet. Add your first task above.</p>

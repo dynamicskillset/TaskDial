@@ -51,7 +51,9 @@ export default function BacklogList({ tasks, onAssignToToday, onEditTask, onDele
           <li
             key={task.id}
             className="backlog-list__item"
+            role="button"
             tabIndex={0}
+            aria-label={`Edit task: ${task.title}`}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();

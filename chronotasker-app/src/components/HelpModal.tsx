@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import './HelpModal.css';
 
 function FaqItem({ question, children }: { question: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const answerId = useId();
 
   return (
     <div className={`help-faq__item ${open ? 'help-faq__item--open' : ''}`}>
@@ -10,6 +11,7 @@ function FaqItem({ question, children }: { question: string; children: React.Rea
         className="help-faq__question"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
+        aria-controls={answerId}
       >
         <span>{question}</span>
         <svg
@@ -29,7 +31,9 @@ function FaqItem({ question, children }: { question: string; children: React.Rea
           />
         </svg>
       </button>
-      {open && <div className="help-faq__answer">{children}</div>}
+      <div id={answerId} className="help-faq__answer" hidden={!open}>
+        {children}
+      </div>
     </div>
   );
 }

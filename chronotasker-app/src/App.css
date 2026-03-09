@@ -1172,6 +1172,92 @@
 
 }
 
+/* ── Tag filter ── */
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem 0;
+  align-items: center;
+}
+
+.tag-filter__pill {
+  border: none;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity var(--transition-normal), transform 0.1s ease;
+}
+
+.tag-filter__pill:hover {
+  opacity: 1;
+}
+
+.tag-filter__pill--active {
+  opacity: 1;
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.tag-filter__clear {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color var(--transition-normal);
+}
+
+.tag-filter__clear:hover {
+  color: var(--color-text);
+}
+
+/* ── Undo/Redo bar ── */
+.undo-bar {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.35rem 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  white-space: nowrap;
+}
+
+.undo-bar__btn {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  transition: background var(--transition-normal);
+}
+
+.undo-bar__btn:hover {
+  background: var(--color-hover-bg);
+}
+
+.undo-bar__btn--redo {
+  color: var(--color-text-secondary);
+  border-left: 1px solid var(--color-border);
+  padding-left: 0.75rem;
+  margin-left: 0.25rem;
+}
+
 @media (max-width: 480px) {
   .app {
     padding: 0.5rem;

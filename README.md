@@ -28,6 +28,14 @@ Push to `main` triggers GitHub Actions. Frontend builds in CI, backend builds on
 
 ## Changelog
 
+### v1.0.3 — 2026-03-09
+
+- **Undo/redo**: Undo or redo the last task action (add, delete, edit, complete, mark important) using Cmd+Z / Cmd+Shift+Z or the bar that appears at the bottom of the screen.
+- **Tag filtering**: When tasks have different tags, filter pills appear above the task list — click one to show only tasks with that tag.
+- **First-time onboarding**: New users see a short explanation of how the app works, with a link to try demo mode.
+- **Browser notifications**: The app now notifies you when a scheduled task is about to start (requires notification permission, which the Pomodoro timer already requests).
+- **Accessibility**: FAQ accordion, reschedule popover, time inputs, and backlog items all have correct screen reader attributes.
+
 ### v1.0.2 — 2026-03-09
 
 - The highlight colour now defaults to warm gold (Nord yellow) instead of blue.

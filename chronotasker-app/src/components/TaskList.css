@@ -40,6 +40,49 @@
   margin: 0;
 }
 
+.task-list--onboarding {
+  padding: 1.5rem 1.25rem;
+  text-align: left;
+}
+
+.task-list__onboarding-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tl-text);
+  margin: 0 0 0.75rem;
+}
+
+.task-list__onboarding-tips {
+  margin: 0 0 1.25rem;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.task-list__onboarding-tips li {
+  font-size: 0.85rem;
+  color: var(--tl-text-secondary);
+  line-height: 1.4;
+}
+
+.task-list__try-demo {
+  background: none;
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+.task-list__try-demo:hover {
+  background: var(--color-accent);
+  color: var(--color-submit-text, #2E3440);
+}
+
 .task-list--all-done .task-list__all-done-message {
   color: var(--color-accent);
   font-size: 0.875rem;

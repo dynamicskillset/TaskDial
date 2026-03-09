@@ -10,7 +10,7 @@ import BacklogList from './components/BacklogList';
 import { usePomodoro } from './hooks/usePomodoro';
 import { useSync } from './hooks/useSync';
 import { scheduleTasks, findNonOverflowOrdering, type ScheduledTask } from './utils/scheduling';
-import { formatDuration } from './utils/format';
+import { formatDuration, tagColor, tagBgColor } from './utils/format';
 import { todayString, tomorrowString, formatDate } from './utils/scheduling';
 import { fetchCalendar, fetchTasks as apiFetchTasks, logInstallEvent } from './services/api';
 import * as storage from './services/storage';
@@ -21,11 +21,14 @@ const RecurringDeleteModal = lazy(() => import('./components/RecurringDeleteModa
 const UnfinishedTasksModal = lazy(() => import('./components/UnfinishedTasksModal'));
 import { useUnfinishedTasks } from './hooks/useUnfinishedTasks';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
+import { useUndoRedo } from './hooks/useUndoRedo';
+import { useTaskNotifications } from './hooks/useTaskNotifications';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
 import './App.css';
 
 function App() {
   const [date, setDate] = useState(todayString());
+  const [isFirstVisit, setIsFirstVisit] = useState(() => !localStorage.getItem('chronotasker-visited'));
   const [tasks, setTasks] = useState<Task[]>([]);
   const [, setSessions] = useState<import('./types').PomodoroSession[]>([]);
   const [settings, setSettings] = useState<AppSettings>({ ...DEFAULT_SETTINGS });
@@ -44,6 +47,7 @@ function App() {
   const [showTimer, setShowTimer] = useState(false);
   const [showForm, setShowForm] = useState(true);
   const [showTaskList, setShowTaskList] = useState(true);
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [clockColorMap, setClockColorMap] = useState<Map<string, string>>(new Map());
   const [backlogTasks, setBacklogTasks] = useState<Task[]>([]);
   const [showBacklog, setShowBacklog] = useState(false);
@@ -83,6 +87,9 @@ function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Undo/redo
+  const { push: pushUndo, handleUndo, handleRedo, canUndo, canRedo, undoLabel } = useUndoRedo();
 
   // Pomodoro
   const pomodoro = usePomodoro(settings);
@@ -200,6 +207,19 @@ function App() {
     setCalendarEvents(getDemoCalendarEvents(date));
   }, [date, demoMode]);
 
+  // Keyboard shortcut: Cmd/Ctrl+Z = undo, Cmd/Ctrl+Shift+Z = redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (!ctrl) return;
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+      if (e.key === 'z' && e.shiftKey)  { e.preventDefault(); handleRedo(); }
+      if (e.key === 'y')                 { e.preventDefault(); handleRedo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUndo, handleRedo]);
+
   // Re-parse cached iCal data when date changes
   useEffect(() => {
     if (demoMode) return;
@@ -312,6 +332,21 @@ function App() {
     });
   }, [tasks, scheduledTasks]);
 
+  // Unique tags for the current day's tasks (sorted alphabetically)
+  const taskTags = useMemo(() =>
+    [...new Set(tasksWithScheduleInfo.map(t => t.tag).filter((t): t is string => !!t))].sort(),
+    [tasksWithScheduleInfo]
+  );
+
+  // Filtered task list (apply tag filter if active)
+  const filteredTasks = useMemo(() =>
+    activeTagFilter ? tasksWithScheduleInfo.filter(t => t.tag === activeTagFilter) : tasksWithScheduleInfo,
+    [tasksWithScheduleInfo, activeTagFilter]
+  );
+
+  // Task start notifications
+  useTaskNotifications(scheduledTasks, currentTime, isToday, !demoMode);
+
   // Task handlers
   const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'sortOrder'>) => {
     const now = new Date().toISOString();
@@ -324,45 +359,64 @@ function App() {
     };
     setTasks(prev => [...prev, newTask]);
     pushTask('create', newTask);
-  }, [tasks.length, pushTask]);
+    if (isFirstVisit) { localStorage.setItem('chronotasker-visited', '1'); setIsFirstVisit(false); }
+    pushUndo({
+      label: `Add "${newTask.title}"`,
+      undo: () => { setTasks(prev => prev.filter(t => t.id !== newTask.id)); pushTask('delete', newTask); },
+      redo: () => { setTasks(prev => [...prev, newTask]); pushTask('create', newTask); },
+    });
+  }, [tasks.length, pushTask, pushUndo]);
 
   const handleUpdateTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'sortOrder'>) => {
     if (!editingTask) return;
+    const prev_task = editingTask;
     const updated: Task = {
       ...editingTask,
       ...taskData,
       updatedAt: new Date().toISOString(),
     };
     if (editingTask.date === 'backlog') {
-      // Keep it in the backlog — preserve backlog date regardless of what TaskForm sent
       const backlogUpdated = { ...updated, date: 'backlog' };
       setBacklogTasks(prev => prev.map(t => t.id === backlogUpdated.id ? backlogUpdated : t));
       pushTask('update', backlogUpdated);
     } else {
       setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
       pushTask('update', updated);
+      pushUndo({
+        label: `Edit "${updated.title}"`,
+        undo: () => { setTasks(prev => prev.map(t => t.id === prev_task.id ? prev_task : t)); pushTask('update', prev_task); },
+        redo: () => { setTasks(prev => prev.map(t => t.id === updated.id ? updated : t)); pushTask('update', updated); },
+      });
     }
     setEditingTask(undefined);
-  }, [editingTask, pushTask]);
+  }, [editingTask, pushTask, pushUndo]);
 
   const handleToggleComplete = useCallback((taskId: string) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t;
-      const toggled = { ...t, completed: !t.completed, updatedAt: new Date().toISOString() };
-      if (toggled.completed && settings.enableSounds) playTick();
-      pushTask('update', toggled);
-      return toggled;
-    }));
-  }, [pushTask, settings.enableSounds]);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const toggled = { ...task, completed: !task.completed, updatedAt: new Date().toISOString() };
+    if (toggled.completed && settings.enableSounds) playTick();
+    setTasks(prev => prev.map(t => t.id === taskId ? toggled : t));
+    pushTask('update', toggled);
+    pushUndo({
+      label: toggled.completed ? `Complete "${toggled.title}"` : `Uncomplete "${toggled.title}"`,
+      undo: () => { setTasks(prev => prev.map(t => t.id === task.id ? task : t)); pushTask('update', task); },
+      redo: () => { setTasks(prev => prev.map(t => t.id === toggled.id ? toggled : t)); pushTask('update', toggled); },
+    });
+  }, [tasks, pushTask, pushUndo, settings.enableSounds]);
 
   const handleToggleImportant = useCallback((taskId: string) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t;
-      const toggled = { ...t, important: !t.important, updatedAt: new Date().toISOString() };
-      pushTask('update', toggled);
-      return toggled;
-    }));
-  }, [pushTask]);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const toggled = { ...task, important: !task.important, updatedAt: new Date().toISOString() };
+    setTasks(prev => prev.map(t => t.id === taskId ? toggled : t));
+    pushTask('update', toggled);
+    pushUndo({
+      label: toggled.important ? `Mark "${toggled.title}" important` : `Unmark "${toggled.title}" important`,
+      undo: () => { setTasks(prev => prev.map(t => t.id === task.id ? task : t)); pushTask('update', task); },
+      redo: () => { setTasks(prev => prev.map(t => t.id === toggled.id ? toggled : t)); pushTask('update', toggled); },
+    });
+  }, [tasks, pushTask, pushUndo]);
 
   const handleDeleteTask = useCallback((taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
@@ -377,7 +431,12 @@ function App() {
     setTasks(prev => prev.filter(t => t.id !== taskId));
     pushTask('delete', task);
     if (activeTaskId === taskId) setActiveTaskId(null);
-  }, [tasks, pushTask, activeTaskId]);
+    pushUndo({
+      label: `Delete "${task.title}"`,
+      undo: () => { setTasks(prev => [...prev, task]); pushTask('create', task); },
+      redo: () => { setTasks(prev => prev.filter(t => t.id !== taskId)); pushTask('delete', task); },
+    });
+  }, [tasks, pushTask, pushUndo, activeTaskId]);
 
   const handleRecurringDeleteSingle = useCallback(() => {
     if (!recurringDeleteTask) return;
@@ -1251,8 +1310,26 @@ function App() {
                               </div>
                             </div>
                           )}
+                          {taskTags.length > 1 && (
+                            <div className="tag-filter" role="group" aria-label="Filter by tag">
+                              {taskTags.map(tag => (
+                                <button
+                                  key={tag}
+                                  className={`tag-filter__pill${activeTagFilter === tag ? ' tag-filter__pill--active' : ''}`}
+                                  style={{ color: tagColor(tag), backgroundColor: tagBgColor(tag) }}
+                                  onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                                  aria-pressed={activeTagFilter === tag}
+                                >
+                                  {tag}
+                                </button>
+                              ))}
+                              {activeTagFilter && (
+                                <button className="tag-filter__clear" onClick={() => setActiveTagFilter(null)} aria-label="Clear tag filter">✕</button>
+                              )}
+                            </div>
+                          )}
                           <TaskList
-                            tasks={tasksWithScheduleInfo}
+                            tasks={filteredTasks}
                             colorMap={clockColorMap}
                             activeTaskId={activeTaskId}
                             allTasksDone={allTasksDone}
@@ -1265,6 +1342,8 @@ function App() {
                             onSelectTask={setActiveTaskId}
                             onRescheduleTask={handleRescheduleTask}
                             onMoveAllToTomorrow={handleMoveAllToTomorrow}
+                            isFirstVisit={isFirstVisit && !demoMode}
+                            onTryDemo={enterDemoMode}
                           />
                         </div>
                       )}
@@ -1328,8 +1407,26 @@ function App() {
                     </div>
                   </div>
                 )}
+                {taskTags.length > 1 && (
+                  <div className="tag-filter" role="group" aria-label="Filter by tag">
+                    {taskTags.map(tag => (
+                      <button
+                        key={tag}
+                        className={`tag-filter__pill${activeTagFilter === tag ? ' tag-filter__pill--active' : ''}`}
+                        style={{ color: tagColor(tag), backgroundColor: tagBgColor(tag) }}
+                        onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                        aria-pressed={activeTagFilter === tag}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                    {activeTagFilter && (
+                      <button className="tag-filter__clear" onClick={() => setActiveTagFilter(null)} aria-label="Clear tag filter">✕</button>
+                    )}
+                  </div>
+                )}
                 <TaskList
-                  tasks={tasksWithScheduleInfo}
+                  tasks={filteredTasks}
                   colorMap={clockColorMap}
                   activeTaskId={activeTaskId}
                   allTasksDone={allTasksDone}
@@ -1341,6 +1438,8 @@ function App() {
                   onReorderAll={handleReorderAll}
                   onSelectTask={setActiveTaskId}
                   onMoveAllToTomorrow={handleMoveAllToTomorrow}
+                  isFirstVisit={isFirstVisit && !demoMode}
+                  onTryDemo={enterDemoMode}
                 />
               </div>
             </>
@@ -1359,6 +1458,21 @@ function App() {
           onCancel={() => setRecurringDeleteTask(null)}
         />
       </Suspense>
+
+      {(canUndo || canRedo) && (
+        <div className="undo-bar" role="status" aria-live="polite">
+          {canUndo && (
+            <button className="undo-bar__btn" onClick={handleUndo} aria-label={`Undo: ${undoLabel}`}>
+              ↩ Undo{undoLabel ? `: ${undoLabel}` : ''}
+            </button>
+          )}
+          {canRedo && (
+            <button className="undo-bar__btn undo-bar__btn--redo" onClick={handleRedo} aria-label="Redo">
+              ↪ Redo
+            </button>
+          )}
+        </div>
+      )}
 
       {showInstallBanner && (
         <div className="install-banner" role="status">

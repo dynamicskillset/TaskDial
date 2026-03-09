@@ -266,6 +266,7 @@ export default function TaskForm({ onSubmit, editingTask, onCancel, date, existi
                 className="task-form__time-input"
                 value={fixedStartTime}
                 onChange={(e) => setFixedStartTime(e.target.value)}
+                aria-label="Fixed start time"
               />
             )}
             {meetingConflict && (
