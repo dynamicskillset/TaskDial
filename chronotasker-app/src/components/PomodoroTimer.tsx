@@ -112,7 +112,7 @@ export default function PomodoroTimer({
           >
             {showMilestone ? 'Cycle done' : PHASE_LABELS[type]}
           </span>
-          <span className="pomodoro-timer__time" role="timer" aria-live="polite" aria-atomic="true">
+          <span className="pomodoro-timer__time" role="timer" aria-live="polite" aria-atomic="true" aria-label="Pomodoro timer">
             {formatTime(timeRemainingSeconds)}
           </span>
           {currentTaskTitle && (

@@ -221,7 +221,11 @@ const TaskItem = memo(function TaskItem({
         <span className="task-list__title">
           {task.title}
           {(task.recurrencePattern || task.recurrenceSourceId) && (
-            <span className="task-list__recurrence-badge" title={task.recurrencePattern ? `Repeats ${task.recurrencePattern}` : 'Recurring instance'}>
+            <span
+              className="task-list__recurrence-badge"
+              title={task.recurrencePattern ? `Repeats ${task.recurrencePattern}` : 'Recurring instance'}
+              aria-label={task.recurrencePattern ? `Repeats ${task.recurrencePattern}` : 'Recurring instance'}
+            >
               ↻
             </span>
           )}
@@ -242,12 +246,12 @@ const TaskItem = memo(function TaskItem({
             </span>
           )}
           {task.meetingConflict && !task.isBreak && (
-            <span className="task-list__warning" title={`Overlaps: ${task.meetingConflict}`}>
+            <span className="task-list__warning" title={`Overlaps: ${task.meetingConflict}`} aria-label={`Overlaps with: ${task.meetingConflict}`}>
               ⚠ Overlaps
             </span>
           )}
           {task.overflows && (
-            <span className="task-list__warning" title="Overflows past day end">
+            <span className="task-list__warning" title="Overflows past day end" aria-label="This task overflows past the end of the day">
               ⚠ Overflow
             </span>
           )}
@@ -532,16 +536,15 @@ export default function TaskList({
 
   const handleDrop = useCallback((e: React.DragEvent, targetId: string) => {
     e.preventDefault();
-    if (!draggingId || draggingId === targetId || !onReorderAll) {
+    const targetTask = tasks.find(t => t.id === targetId);
+    if (!draggingId || draggingId === targetId || !onReorderAll || targetTask?.completed || targetTask?.isBreak) {
       setDraggingId(null);
       setDragOverId(null);
       return;
     }
 
-    // Reorder incomplete tasks: move dragged task to target position
-    const incomplete = [...tasks]
-      .filter(t => !t.completed)
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    // Use visual order (scheduledStart) so drop position matches what the user sees
+    const incomplete = [...incompleteTasks];
 
     const dragIdx = incomplete.findIndex(t => t.id === draggingId);
     const targetIdx = incomplete.findIndex(t => t.id === targetId);
@@ -554,7 +557,7 @@ export default function TaskList({
 
     setDraggingId(null);
     setDragOverId(null);
-  }, [draggingId, tasks, onReorderAll]);
+  }, [draggingId, tasks, incompleteTasks, onReorderAll]);
 
   if (tasks.length === 0) {
     if (isFirstVisit) {

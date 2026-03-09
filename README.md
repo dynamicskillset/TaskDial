@@ -28,6 +28,11 @@ Push to `main` triggers GitHub Actions. Frontend builds in CI, backend builds on
 
 ## Changelog
 
+### v1.0.4 — 2026-03-09
+
+- **Drag to reorder**: You can now drag tasks up and down the list to change their order on the clock. On touch devices the up/down buttons remain available.
+- **Accessibility**: Screen readers now get clear descriptions for the Pomodoro timer, recurring task badge, conflict and overflow warnings, day start/end time inputs, and colour scheme options.
+
 ### v1.0.3 — 2026-03-09
 
 - **Undo/redo**: Undo or redo the last task action (add, delete, edit, complete, mark important) using Cmd+Z / Cmd+Shift+Z or the bar that appears at the bottom of the screen.

@@ -867,11 +867,11 @@ function App() {
               <div className="settings-row">
                 <span className="settings-row__label">Day hours</span>
                 <div className="settings-row__control--inline">
-                  <input type="time" className="settings-time-input"
+                  <input type="time" className="settings-time-input" aria-label="Day start time"
                     value={`${String(Math.floor(settings.dayStartHour)).padStart(2, '0')}:${String(Math.round((settings.dayStartHour % 1) * 60)).padStart(2, '0')}`}
                     onChange={e => { const [h, m] = e.target.value.split(':').map(Number); if (!isNaN(h)) { const s = { ...settings, dayStartHour: h + (m || 0) / 60 }; setSettings(s); debouncedPushSettings(s); } }} />
                   <span className="settings-row__sep">to</span>
-                  <input type="time" className="settings-time-input"
+                  <input type="time" className="settings-time-input" aria-label="Day end time"
                     value={`${String(Math.floor(settings.dayEndHour)).padStart(2, '0')}:${String(Math.round((settings.dayEndHour % 1) * 60)).padStart(2, '0')}`}
                     onChange={e => { const [h, m] = e.target.value.split(':').map(Number); if (!isNaN(h)) { const s = { ...settings, dayEndHour: h + (m || 0) / 60 }; setSettings(s); debouncedPushSettings(s); } }} />
                 </div>
@@ -889,7 +889,7 @@ function App() {
                 <span className="settings-row__label">Highlight colour</span>
                 <div className="colour-swatches" role="radiogroup" aria-label="Highlight colour">
                   {(['yellow', 'nord', 'aurora', 'frost', 'evergreen', 'berry'] as const).map(scheme => (
-                    <label key={scheme} className={`colour-swatch colour-swatch--${scheme}${(settings.colorScheme || 'yellow') === scheme ? ' colour-swatch--active' : ''}`} title={scheme.charAt(0).toUpperCase() + scheme.slice(1)}>
+                    <label key={scheme} className={`colour-swatch colour-swatch--${scheme}${(settings.colorScheme || 'yellow') === scheme ? ' colour-swatch--active' : ''}`} title={scheme.charAt(0).toUpperCase() + scheme.slice(1)} aria-label={scheme.charAt(0).toUpperCase() + scheme.slice(1)}>
                       <input type="radio" name="colorScheme" value={scheme} checked={(settings.colorScheme || 'yellow') === scheme}
                         onChange={() => { const s = { ...settings, colorScheme: scheme as AppSettings['colorScheme'] }; setSettings(s); debouncedPushSettings(s); }} />
                       <span className="colour-swatch__dot" />
