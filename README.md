@@ -32,6 +32,7 @@ Push to `main` triggers GitHub Actions. Frontend builds in CI, backend builds on
 
 - Calendar events from other time zones now appear at the right time of day instead of being shifted by several hours.
 - The app version number is shown in the top-left corner of the screen, next to the help button.
+- Task titles on mobile now wrap onto multiple lines instead of being cut off with "..."
 
 ### v1.0.0 — 2026-03-05
 

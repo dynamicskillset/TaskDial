@@ -605,6 +605,11 @@
 
   .task-list__title {
     font-size: 0.85rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    flex-wrap: wrap;
+    word-break: break-word;
   }
 }
 
