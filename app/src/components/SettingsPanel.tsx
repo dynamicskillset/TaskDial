@@ -150,6 +150,7 @@ export function SettingsPanel({
   userEmail,
 }: SettingsPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('look');
+  const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
 
   const set = useCallback(
     (changes: Partial<AppSettings>) => onSettingChange({ ...settings, ...changes }),
@@ -378,11 +379,45 @@ export function SettingsPanel({
           {activeTab === 'calendars' && (
             <div className="sp-pane">
               <SectionLabel>iCal feeds</SectionLabel>
-              <p className="sp-hint">
-                Paste a private iCal URL. Google: Settings → [calendar] → "Secret address in iCal format".
-                Apple: right-click → Share → Public Calendar.
-                Proton: Settings → [calendar] → "Link to this calendar".
-              </p>
+
+              <details className="sp-ical-guide">
+                <summary className="sp-ical-guide__summary">How to find your iCal URL</summary>
+                <div className="sp-ical-guide__body">
+                  <div className="sp-ical-guide__provider">
+                    <span className="sp-ical-guide__provider-name">Google Calendar</span>
+                    <ol className="sp-ical-guide__steps">
+                      <li>Open Google Calendar on the web</li>
+                      <li>Click the three dots next to a calendar on the left</li>
+                      <li>Choose <strong>Settings and sharing</strong></li>
+                      <li>Scroll to <strong>Secret address in iCal format</strong> and copy the link</li>
+                    </ol>
+                  </div>
+                  <div className="sp-ical-guide__provider">
+                    <span className="sp-ical-guide__provider-name">Apple Calendar (macOS)</span>
+                    <ol className="sp-ical-guide__steps">
+                      <li>Right-click a calendar in the sidebar</li>
+                      <li>Choose <strong>Share Calendar…</strong></li>
+                      <li>Tick <strong>Public Calendar</strong> and copy the link</li>
+                    </ol>
+                  </div>
+                  <div className="sp-ical-guide__provider">
+                    <span className="sp-ical-guide__provider-name">Proton Calendar</span>
+                    <ol className="sp-ical-guide__steps">
+                      <li>Go to Settings and open a calendar</li>
+                      <li>Under <strong>Other settings</strong>, find <strong>Link to this calendar</strong></li>
+                      <li>Copy the link</li>
+                    </ol>
+                  </div>
+                  <div className="sp-ical-guide__provider">
+                    <span className="sp-ical-guide__provider-name">Fastmail / other apps</span>
+                    <ol className="sp-ical-guide__steps">
+                      <li>Look for a <strong>Share</strong> or <strong>Export</strong> option in your calendar's settings</li>
+                      <li>Copy the private or secret iCal/ICS link — not a public subscribe link</li>
+                    </ol>
+                  </div>
+                </div>
+              </details>
+
               {icalUrlInputs.map((url, i) => (
                 <div key={i} className="sp-ical-entry">
                   <div className="sp-ical-row">
@@ -396,15 +431,38 @@ export function SettingsPanel({
                         const next = [...icalUrlInputs];
                         next[i] = e.target.value;
                         onIcalUrlsChange(next);
+                        if (confirmRemoveIndex === i) setConfirmRemoveIndex(null);
                       }}
                       onKeyDown={e => e.key === 'Enter' && onLoadCalendar()}
                     />
-                    {icalUrlInputs.length > 1 && (
+                    {confirmRemoveIndex === i ? (
+                      <div className="sp-ical-confirm">
+                        <button
+                          type="button"
+                          className="sp-ical-confirm__yes"
+                          aria-label="Confirm remove calendar feed"
+                          onClick={() => {
+                            onIcalUrlsChange(icalUrlInputs.filter((_, j) => j !== i));
+                            setConfirmRemoveIndex(null);
+                          }}
+                        >
+                          Remove
+                        </button>
+                        <button
+                          type="button"
+                          className="sp-ical-confirm__no"
+                          aria-label="Cancel remove"
+                          onClick={() => setConfirmRemoveIndex(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
                         className="sp-ical-remove"
                         aria-label="Remove calendar feed"
-                        onClick={() => onIcalUrlsChange(icalUrlInputs.filter((_, j) => j !== i))}
+                        onClick={() => setConfirmRemoveIndex(i)}
                       >
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                           <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
