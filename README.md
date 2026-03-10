@@ -1,8 +1,8 @@
-# ChronoTasker
+# TaskDial
 
 ![TaskDial screenshot](taskdial-screenshot.png)
 
-Most to-do apps show you a list. ChronoTasker shows you your day as a clock: tasks are coloured arcs, so you can see at a glance whether your plan is realistic, where the gaps are, and where you're overloading yourself.
+Most to-do apps show you a list. TaskDial shows you your day as a clock: tasks are coloured arcs, so you can see at a glance whether your plan is realistic, where the gaps are, and where you're overloading yourself.
 
 There's a built-in Pomodoro timer too, so focused work and planning live in the same place.
 
@@ -26,7 +26,7 @@ There's a built-in Pomodoro timer too, so focused work and planning live in the 
 
 ## Getting access
 
-ChronoTasker is currently in testing, so you'll need an invite code to sign up. Once you have one:
+TaskDial is currently in testing, so you'll need an invite code to sign up. Once you have one:
 
 1. Go to [chronotasker.dougbelshaw.com](https://chronotasker.dougbelshaw.com)
 2. Click **Create account** and enter your email, a password (12 characters or more), and your invite code
@@ -36,7 +36,7 @@ ChronoTasker is currently in testing, so you'll need an invite code to sign up. 
 
 ## Privacy
 
-ChronoTasker stores your tasks and settings on the server so they sync across your devices. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://chronotasker.dougbelshaw.com/privacy).
+TaskDial stores your tasks and settings on the server so they sync across your devices. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://chronotasker.dougbelshaw.com/privacy).
 
 ---
 
@@ -56,7 +56,7 @@ ChronoTasker stores your tasks and settings on the server so they sync across yo
 
 ### v1.1.0 — 2026-03-10
 
-- **Multi-user support**: ChronoTasker now supports multiple accounts. Each person sees only their own tasks and settings.
+- **Multi-user support**: TaskDial now supports multiple accounts. Each person sees only their own tasks and settings.
 - **Sign up and log in**: create an account with an invite code; sessions refresh automatically so you stay logged in.
 - **Admin dashboard**: the owner account gets a panel at `/admin` to manage users, create and revoke invite codes, and view an audit log.
 - **Security**: passwords are hashed, tokens are stored in secure httpOnly cookies rather than localStorage, and all data is scoped to the logged-in user.
@@ -95,7 +95,7 @@ First release: clock face visualisation, Pomodoro timer, task management, calend
 <details>
 <summary><strong>Self-hosting and development</strong></summary>
 
-ChronoTasker is designed to be self-hosted. You run one server for yourself and anyone you invite.
+TaskDial is designed to be self-hosted. You run one server for yourself and anyone you invite.
 
 ### Requirements
 
@@ -107,8 +107,8 @@ ChronoTasker is designed to be self-hosted. You run one server for yourself and 
 **1. Clone the repo**
 
 ```bash
-git clone https://github.com/dynamicskillset/ChronoTasker
-cd ChronoTasker
+git clone https://github.com/dynamicskillset/TaskDial
+cd TaskDial
 ```
 
 **2. Configure the server**
@@ -122,7 +122,7 @@ Edit `.env`:
 
 ```
 JWT_SECRET=        # generate: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-APP_ORIGIN=        # your frontend URL, e.g. https://chronotasker.example.com
+APP_ORIGIN=        # your frontend URL, e.g. https://taskdial.example.com
 OWNER_EMAIL=       # your email address
 PORT=3001
 NODE_ENV=production
