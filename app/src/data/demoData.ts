@@ -366,6 +366,209 @@ function getTomorrowEvents(): CalendarEvent[] {
   ];
 }
 
+// ── Day +2 ────────────────────────────────────────────────────
+
+function getDayPlus2Tasks(date: string, now: string): Task[] {
+  return [
+    {
+      id: 'demo-d2-1',
+      title: 'Weekly planning',
+      durationMinutes: 30,
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'admin',
+      sortOrder: 0,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d2-2',
+      title: 'Write release notes',
+      durationMinutes: 45,
+      fixedStartTime: '09:30',
+      completed: false,
+      important: true,
+      isBreak: false,
+      tag: 'deep work',
+      sortOrder: 1,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d2-3',
+      title: 'Lunch break',
+      durationMinutes: 45,
+      completed: false,
+      important: false,
+      isBreak: true,
+      sortOrder: 2,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d2-4',
+      title: 'Review pull requests',
+      durationMinutes: 30,
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'dev',
+      sortOrder: 3,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d2-5',
+      title: 'User interview',
+      durationMinutes: 60,
+      fixedStartTime: '15:00',
+      completed: false,
+      important: true,
+      isBreak: false,
+      tag: 'research',
+      sortOrder: 4,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d2-6',
+      title: 'Summarise interview notes',
+      durationMinutes: 20,
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'research',
+      sortOrder: 5,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
+
+function getDayPlus2Events(): CalendarEvent[] {
+  return [
+    {
+      uid: 'demo-cal-d2-1',
+      summary: 'User interview',
+      startMinutes: 15 * 60,
+      endMinutes: 16 * 60,
+      allDay: false,
+    },
+  ];
+}
+
+// ── Day +3 ────────────────────────────────────────────────────
+
+function getDayPlus3Tasks(date: string, now: string): Task[] {
+  return [
+    {
+      id: 'demo-d3-1',
+      title: 'Morning review',
+      durationMinutes: 15,
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'admin',
+      sortOrder: 0,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d3-2',
+      title: 'Refactor data layer',
+      durationMinutes: 90,
+      fixedStartTime: '09:00',
+      completed: false,
+      important: true,
+      isBreak: false,
+      tag: 'dev',
+      details: '- Extract service layer\n- Add unit tests\n- Update API types',
+      sortOrder: 1,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d3-3',
+      title: 'Lunch break',
+      durationMinutes: 45,
+      completed: false,
+      important: false,
+      isBreak: true,
+      sortOrder: 2,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d3-4',
+      title: 'Design review',
+      durationMinutes: 45,
+      fixedStartTime: '13:30',
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'design',
+      sortOrder: 3,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d3-5',
+      title: 'Update project board',
+      durationMinutes: 20,
+      completed: false,
+      important: false,
+      isBreak: false,
+      tag: 'admin',
+      sortOrder: 4,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'demo-d3-6',
+      title: 'End of week wrap-up',
+      durationMinutes: 25,
+      completed: false,
+      important: false,
+      isBreak: false,
+      sortOrder: 5,
+      date,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
+
+function getDayPlus3Events(): CalendarEvent[] {
+  return [
+    {
+      uid: 'demo-cal-d3-1',
+      summary: 'Design review',
+      startMinutes: 13 * 60 + 30,
+      endMinutes: 14 * 60 + 15,
+      allDay: false,
+    },
+    {
+      uid: 'demo-cal-d3-2',
+      summary: 'All-hands',
+      startMinutes: 16 * 60,
+      endMinutes: 16 * 60 + 30,
+      allDay: false,
+    },
+  ];
+}
+
 // ── Public API ────────────────────────────────────────────────
 
 export function getDemoTasks(dateStr?: string): Task[] {
@@ -376,6 +579,8 @@ export function getDemoTasks(dateStr?: string): Task[] {
   if (offset === -1) return getYesterdayTasks(date, now);
   if (offset === 0)  return getTodayTasks(date, now);
   if (offset === 1)  return getTomorrowTasks(date, now);
+  if (offset === 2)  return getDayPlus2Tasks(date, now);
+  if (offset === 3)  return getDayPlus3Tasks(date, now);
   return [];
 }
 
@@ -386,6 +591,8 @@ export function getDemoCalendarEvents(dateStr?: string): CalendarEvent[] {
   if (offset === -1) return getYesterdayEvents();
   if (offset === 0)  return getTodayEvents();
   if (offset === 1)  return getTomorrowEvents();
+  if (offset === 2)  return getDayPlus2Events();
+  if (offset === 3)  return getDayPlus3Events();
   return [];
 }
 
