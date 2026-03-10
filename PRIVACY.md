@@ -8,9 +8,9 @@ ChronoTasker is a personal productivity tool. This policy explains what informat
 
 ## Who is responsible for your data
 
-ChronoTasker is operated by Doug Belshaw (doug@dynamicskillset.com). For the purposes of the GDPR, Doug Belshaw is the data controller.
+ChronoTasker is operated by Doug Belshaw (privacy@dynamicskillset.com). For the purposes of the GDPR, Doug Belshaw is the data controller.
 
-If you have any questions or want to exercise your rights, contact: **doug@dynamicskillset.com**
+If you have any questions or want to exercise your rights, contact: **privacy@dynamicskillset.com**
 
 ---
 
@@ -142,4 +142,4 @@ If we make significant changes to how we handle your data, we will update this p
 
 ---
 
-*Questions? Contact doug@dynamicskillset.com*
+*Questions? Contact privacy@dynamicskillset.com*

@@ -15,6 +15,7 @@ export function getDb(): Database.Database {
     db.pragma('foreign_keys = ON');
     initTables();
     seedOwner();
+    purgeOldAuditLogs();
   }
   return db;
 }
@@ -206,6 +207,21 @@ function seedOwner(): void {
   }
   console.log('='.repeat(60));
   console.log('');
+}
+
+function purgeOldAuditLogs(): void {
+  try {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 12);
+    const result = db.prepare(
+      "DELETE FROM audit_log WHERE created_at < ?"
+    ).run(cutoff.toISOString());
+    if (result.changes > 0) {
+      console.log(`[db] Purged ${result.changes} audit log entries older than 12 months`);
+    }
+  } catch {
+    // Never crash startup on cleanup
+  }
 }
 
 export function writeAuditLog(
