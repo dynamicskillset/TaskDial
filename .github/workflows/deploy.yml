@@ -39,13 +39,13 @@ jobs:
 
       - name: Deploy frontend to VPS
         run: |
-          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" app/dist/ root@${{ secrets.VPS_HOST }}:/opt/chronotasker/frontend/
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 root@${{ secrets.VPS_HOST }} 'mkdir -p /opt/ghost/sites/taskdial && cp -r /opt/chronotasker/frontend/. /opt/ghost/sites/taskdial/'
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" app/dist/ root@${{ secrets.VPS_HOST }}:/opt/taskdial/frontend/
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 root@${{ secrets.VPS_HOST }} 'mkdir -p /opt/ghost/sites/taskdial && cp -r /opt/taskdial/frontend/. /opt/ghost/sites/taskdial/'
 
       - name: Deploy server to VPS
         run: |
-          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" server/dist/ root@${{ secrets.VPS_HOST }}:/opt/chronotasker/server/dist/
-          rsync -az -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" server/package.json server/package-lock.json root@${{ secrets.VPS_HOST }}:/opt/chronotasker/server/
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" server/dist/ root@${{ secrets.VPS_HOST }}:/opt/taskdial/server/dist/
+          rsync -az -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" server/package.json server/package-lock.json root@${{ secrets.VPS_HOST }}:/opt/taskdial/server/
 
       - name: Install dependencies and restart on VPS
         run: |
@@ -62,7 +62,7 @@ jobs:
           else
             echo "Dependencies unchanged, skipping npm install."
           fi
-          pm2 restart chronotasker
+          pm2 restart taskdial
           pm2 save
           echo "=== Deploy complete ==="
           SCRIPT
