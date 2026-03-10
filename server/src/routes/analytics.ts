@@ -1,47 +1,36 @@
 import { Router, Request, Response } from 'express';
-import { getDb } from '../db';
+import { incrementUsageStat, getDb } from '../db';
 
 const router = Router();
 
 const VALID_EVENTS = ['impression', 'install', 'dismiss'] as const;
 
-// POST /api/analytics/install — log an event
+// POST /api/analytics/install — log a PWA install prompt event
 router.post('/install', (req: Request, res: Response) => {
-  const { event, timestamp } = req.body;
+  const { event } = req.body;
 
   if (!event || !VALID_EVENTS.includes(event)) {
     res.status(400).json({ error: `event must be one of: ${VALID_EVENTS.join(', ')}` });
     return;
   }
 
-  const db = getDb();
-  db.prepare(
-    'INSERT INTO analytics_events (event_type, event_data, created_at) VALUES (?, ?, ?)'
-  ).run(event, JSON.stringify({ timestamp }), new Date().toISOString());
-
+  incrementUsageStat(`pwa_${event}`);
   res.json({ success: true });
 });
 
-// GET /api/analytics/install — read stats
-router.get('/install', (req: Request, res: Response) => {
-  const since = req.query.since as string | undefined;
+// GET /api/analytics/install — aggregate PWA stats from usage_stats
+router.get('/install', (_req: Request, res: Response) => {
   const db = getDb();
 
-  let rows: Array<{ event_type: string; count: number }>;
-  if (since) {
-    rows = db.prepare(
-      'SELECT event_type, COUNT(*) as count FROM analytics_events WHERE created_at >= ? GROUP BY event_type'
-    ).all(since) as Array<{ event_type: string; count: number }>;
-  } else {
-    rows = db.prepare(
-      'SELECT event_type, COUNT(*) as count FROM analytics_events GROUP BY event_type'
-    ).all() as Array<{ event_type: string; count: number }>;
-  }
+  const rows = db.prepare(
+    "SELECT event, SUM(count) as count FROM usage_stats WHERE event LIKE 'pwa_%' GROUP BY event"
+  ).all() as Array<{ event: string; count: number }>;
 
   const counts: Record<string, number> = { impression: 0, install: 0, dismiss: 0 };
   let total = 0;
   for (const row of rows) {
-    counts[row.event_type] = row.count;
+    const key = row.event.replace('pwa_', '');
+    counts[key] = row.count;
     total += row.count;
   }
 

@@ -19,6 +19,14 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later' },
 });
 
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60, // generous — silent background refreshes; still caps abuse
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many refresh attempts, please try again later' },
+});
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getRefreshExpires(): number {
@@ -200,11 +208,14 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
     getDb().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(upgraded, user.id);
   }
 
-  // Ensure this user has a key_salt (backfill for accounts created before E2EE)
+  // Ensure this user has a key_salt (backfill for accounts created before E2EE).
+  // Uses UPDATE … WHERE key_salt IS NULL so concurrent logins are idempotent:
+  // only the first writer sets the salt; the second reads back whatever was stored.
   if (!user.key_salt) {
-    const newSalt = crypto.randomBytes(32).toString('hex');
-    getDb().prepare('UPDATE users SET key_salt = ? WHERE id = ?').run(newSalt, user.id);
-    user.key_salt = newSalt;
+    const candidate = crypto.randomBytes(32).toString('hex');
+    getDb().prepare('UPDATE users SET key_salt = ? WHERE id = ? AND key_salt IS NULL').run(candidate, user.id);
+    const refreshed = getDb().prepare('SELECT key_salt FROM users WHERE id = ?').get(user.id) as { key_salt: string };
+    user.key_salt = refreshed.key_salt;
   }
 
   const accessToken = signAccessToken(user);
@@ -237,7 +248,7 @@ router.post('/logout', jwtAuth, (req: Request, res: Response) => {
 });
 
 // POST /api/auth/refresh
-router.post('/refresh', (req: Request, res: Response) => {
+router.post('/refresh', refreshLimiter, (req: Request, res: Response) => {
   const ip = getClientIp(req);
   const rawRefresh = req.cookies?.refresh_token;
 
@@ -261,9 +272,24 @@ router.post('/refresh', (req: Request, res: Response) => {
     token_version: number; deleted_at: string | null;
   } | undefined;
 
+  if (!stored) {
+    clearAuthCookies(res);
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+
+  // Reuse detection: if this token is already revoked, a previous legitimate token
+  // was rotated and someone is replaying the old one. Revoke all tokens for this
+  // user immediately to limit the damage from a stolen refresh token.
+  if (stored.revoked) {
+    db.prepare('UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ?').run(stored.user_id);
+    writeAuditLog(stored.user_id, 'refresh_token_reuse_detected', null, ip);
+    clearAuthCookies(res);
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+
   if (
-    !stored ||
-    stored.revoked ||
     new Date(stored.expires_at) < new Date() ||
     !stored.is_active ||
     stored.deleted_at

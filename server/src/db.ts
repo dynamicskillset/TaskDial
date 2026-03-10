@@ -58,15 +58,6 @@ function initTables(): void {
     CREATE INDEX IF NOT EXISTS idx_pomodoro_date ON pomodoro_sessions(date);
     CREATE INDEX IF NOT EXISTS idx_pomodoro_started ON pomodoro_sessions(started_at);
 
-    CREATE TABLE IF NOT EXISTS analytics_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      event_type TEXT NOT NULL,
-      event_data TEXT,
-      created_at TEXT NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at);
-
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -139,6 +130,7 @@ function initTables(): void {
 
   // Migrations for existing databases
   try { db.exec('ALTER TABLE users ADD COLUMN key_salt TEXT'); } catch { /* already exists */ }
+  try { db.exec('DROP TABLE IF EXISTS analytics_events'); } catch { /* ignore */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN is_break INTEGER NOT NULL DEFAULT 0'); } catch { /* already exists */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN tag TEXT'); } catch { /* already exists */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN details TEXT'); } catch { /* already exists */ }

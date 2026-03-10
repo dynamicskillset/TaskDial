@@ -4,7 +4,7 @@
  * The key never leaves the client — the server only stores ciphertext.
  */
 
-const PBKDF2_ITERATIONS = 200_000;
+const PBKDF2_ITERATIONS = 600_000;
 const SESSION_KEY_PREFIX = 'ct_ek_';
 
 let _cryptoKey: CryptoKey | null = null;

@@ -5,9 +5,9 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const FIRST_VISIT_KEY = 'chronotasker_first_visit';
-const DISMISSED_KEY = 'chronotasker_install_dismissed';
-const INSTALLED_KEY = 'chronotasker_app_installed';
+const FIRST_VISIT_KEY = 'td_first_visit';
+const DISMISSED_KEY = 'td_install_dismissed';
+const INSTALLED_KEY = 'td_app_installed';
 const DISMISS_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 
 type InstallEvent = 'impression' | 'install' | 'dismiss';

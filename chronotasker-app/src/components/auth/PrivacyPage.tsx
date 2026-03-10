@@ -19,12 +19,13 @@ export default function PrivacyPage() {
         <p><em>Legal basis: Performance of a contract.</em></p>
 
         <h3>Tasks and Pomodoro sessions</h3>
-        <p>Your tasks (titles, notes, tags, dates, times) and Pomodoro session records are stored on the server so that your data syncs across your devices. Task titles and notes may contain personal information — that is your choice. We do not read or analyse the content of your tasks.</p>
+        <p>Task titles, tags, and notes are encrypted on your device before being sent to the server. The encryption key is derived from your password and never leaves your browser. The server stores only ciphertext for these fields and cannot read them. Task metadata (dates, durations, completion status) is stored unencrypted so the server can sync your data across devices.</p>
+        <p>Pomodoro session records (start time, duration, type) are stored on the server for sync purposes.</p>
         <p><em>Legal basis: Performance of a contract.</em></p>
 
         <h3>Settings</h3>
-        <p>Your app preferences (colour scheme, day start and end times, calendar feed URLs, and other configuration) are stored so they persist across sessions and devices.</p>
-        <p>If you connect a calendar, the URL you provide is stored in your settings. The server fetches that URL on your behalf to display events in the app. The calendar content is not stored — it is fetched fresh each time and returned directly to your browser.</p>
+        <p>Your app preferences (colour scheme, day start and end times, and other configuration) are stored so they persist across sessions and devices.</p>
+        <p>Calendar feed URLs are stored only in your browser. They are never sent to the server. When you load a calendar, your browser makes the request directly through the server proxy — the URL itself is not retained.</p>
         <p><em>Legal basis: Performance of a contract.</em></p>
 
         <h3>Security and audit logs</h3>
@@ -61,7 +62,7 @@ export default function PrivacyPage() {
             <tr><td>Account and task data</td><td>Until you ask for your account to be deleted</td></tr>
             <tr><td>Audit log entries</td><td>12 months from the date your account is deleted, then permanently removed</td></tr>
             <tr><td>Refresh tokens</td><td>30 days from issue, then expired automatically</td></tr>
-            <tr><td>Anonymous analytics events</td><td>12 months, then deleted</td></tr>
+            <tr><td>Aggregate usage counts (logins, installs)</td><td>Kept indefinitely as aggregate totals; no individual events stored</td></tr>
             <tr><td>Inactive accounts</td><td>Accounts inactive for 24 months receive a notice and are deleted 30 days later if no action is taken</td></tr>
           </tbody>
         </table>
@@ -76,7 +77,7 @@ export default function PrivacyPage() {
         <p>You also have the right to lodge a complaint with the supervisory authority in your country. In the UK, this is the <a href="https://ico.org.uk/" target="_blank" rel="noopener noreferrer">Information Commissioner's Office (ICO)</a>.</p>
 
         <h2>Security</h2>
-        <p>Passwords are hashed using bcrypt. Authentication tokens are stored in httpOnly cookies and never exposed to JavaScript. All data in transit is encrypted using HTTPS.</p>
+        <p>Task titles, tags, and notes are encrypted on your device using AES-256-GCM before reaching the server. The key is derived from your password using PBKDF2 and never transmitted. Passwords are hashed using bcrypt and never stored in recoverable form. Authentication tokens are stored in httpOnly cookies and never exposed to JavaScript. All data in transit is encrypted using HTTPS.</p>
 
         <h2>Changes to this policy</h2>
         <p>If we make significant changes to how we handle your data, we will update this page and change the date at the top. We will not reduce your rights without giving you the opportunity to close your account first.</p>

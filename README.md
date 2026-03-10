@@ -6,7 +6,7 @@ Most to-do apps show you a list. TaskDial shows you your day as a clock: tasks a
 
 There's a built-in Pomodoro timer too, so focused work and planning live in the same place.
 
-**Try it at [chronotasker.dougbelshaw.com](https://chronotasker.dougbelshaw.com)** — invite-only while we're testing.
+**Try it at [taskdial.dynamicskillset.com](https://taskdial.dynamicskillset.com)** — invite-only while we're testing.
 
 ---
 
@@ -28,7 +28,7 @@ There's a built-in Pomodoro timer too, so focused work and planning live in the 
 
 TaskDial is currently in testing, so you'll need an invite code to sign up. Once you have one:
 
-1. Go to [chronotasker.dougbelshaw.com](https://chronotasker.dougbelshaw.com)
+1. Go to [taskdial.dynamicskillset.com](https://taskdial.dynamicskillset.com)
 2. Click **Create account** and enter your email, a password (12 characters or more), and your invite code
 3. Install it for the best experience: on **Android and iOS**, add it to your home screen; on **Mac and Linux**, use Chrome or Edge and choose "Install app"
 
@@ -36,7 +36,7 @@ TaskDial is currently in testing, so you'll need an invite code to sign up. Once
 
 ## Privacy
 
-TaskDial encrypts your task content (titles, tags, and notes) on your device before it reaches the server. The encryption key is derived from your password and never leaves your browser. iCal calendar URLs are stored only in your browser and are never sent to the server. The server sees only ciphertext — not your actual task data. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://chronotasker.dougbelshaw.com/privacy).
+TaskDial encrypts your task content (titles, tags, and notes) on your device before it reaches the server. The encryption key is derived from your password and never leaves your browser. iCal calendar URLs are stored only in your browser and are never sent to the server. The server sees only ciphertext — not your actual task data. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://taskdial.dynamicskillset.com/privacy).
 
 ---
 

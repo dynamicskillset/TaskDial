@@ -36,7 +36,14 @@ interface AppProps {
 
 function App({ user, onLogout }: AppProps) {
   const [date, setDate] = useState(todayString());
-  const [isFirstVisit, setIsFirstVisit] = useState(() => !localStorage.getItem('chronotasker-visited'));
+  const [isFirstVisit, setIsFirstVisit] = useState(() => {
+    // Migrate legacy key so existing users don't see the first-visit experience again
+    if (localStorage.getItem('chronotasker-visited')) {
+      localStorage.setItem('td-visited', '1');
+      localStorage.removeItem('chronotasker-visited');
+    }
+    return !localStorage.getItem('td-visited');
+  });
   const [tasks, setTasks] = useState<Task[]>([]);
   const [, setSessions] = useState<import('./types').PomodoroSession[]>([]);
   const [settings, setSettings] = useState<AppSettings>({ ...DEFAULT_SETTINGS });
@@ -429,7 +436,7 @@ function App({ user, onLogout }: AppProps) {
     };
     setTasks(prev => [...prev, newTask]);
     pushTask('create', newTask);
-    if (isFirstVisit) { localStorage.setItem('chronotasker-visited', '1'); setIsFirstVisit(false); }
+    if (isFirstVisit) { localStorage.setItem('td-visited', '1'); setIsFirstVisit(false); }
     pushUndo({
       label: `Add "${newTask.title}"`,
       undo: () => { setTasks(prev => prev.filter(t => t.id !== newTask.id)); pushTask('delete', newTask); },

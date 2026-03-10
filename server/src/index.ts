@@ -23,11 +23,35 @@ import userRouter from './routes/user';
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
+// Trust the Caddy reverse proxy so X-Forwarded-For is used for rate limiting
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigin = process.env.APP_ORIGIN || 'http://localhost:5173';
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Security headers
+app.use((_req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",   // app uses inline styles for dynamic colours
+      "img-src 'self' data:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "worker-src 'self'",
+      "manifest-src 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '),
+  );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  next();
+});
 
 // Health check (no auth required)
 app.get('/health', (_req, res) => {
