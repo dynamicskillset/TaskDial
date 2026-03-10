@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getMe, logout } from '../../services/api';
 import { getUser, setUser, clearUser, isAdmin, type AuthUser } from '../../services/auth';
 import { setStorageUser, clearStorageUser, migrateAnonymousData } from '../../services/storage';
+import { loadKeyFromSession, clearKey } from '../../services/crypto';
 import LoginPage from './LoginPage';
 import AdminDashboard from './AdminDashboard';
 import PrivacyPage from './PrivacyPage';
@@ -51,12 +52,16 @@ export default function AuthGate() {
         setUserState(cached);
         const adminRole = cached.role === 'admin' || cached.role === 'owner';
         setView(wantsAdmin() && adminRole ? 'admin' : 'app');
+        // Restore encryption key from sessionStorage (survives page refresh)
+        await loadKeyFromSession(cached.id);
       }
 
       const me = await getMe();
       if (cancelled) return;
 
       if (me) {
+        // Ensure key is loaded (may not have been if cached was null)
+        await loadKeyFromSession(me.id);
         goToApp(me);
       } else if (cached) {
         goToLogin(true);
@@ -77,6 +82,8 @@ export default function AuthGate() {
   }, [goToLogin]);
 
   async function handleLogout() {
+    const currentUser = getUser();
+    if (currentUser) clearKey(currentUser.id);
     await logout();
     goToLogin(false);
   }

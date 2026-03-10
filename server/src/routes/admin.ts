@@ -264,11 +264,9 @@ router.get('/audit', (_req: Request, res: Response) => {
   const db = getDb();
 
   const entries = db.prepare(`
-    SELECT al.id, al.action, al.detail, al.ip, al.created_at,
-           u.email as user_email
-    FROM audit_log al
-    LEFT JOIN users u ON u.id = al.user_id
-    ORDER BY al.created_at DESC
+    SELECT id, action, detail, ip, created_at
+    FROM audit_log
+    ORDER BY created_at DESC
     LIMIT 50
   `).all();
 
@@ -288,7 +286,8 @@ router.get('/stats', (_req: Request, res: Response) => {
   const totalTasks = (db.prepare('SELECT COUNT(*) as n FROM tasks').get() as { n: number }).n;
   const tasksThisWeek = (db.prepare('SELECT COUNT(*) as n FROM tasks WHERE created_at >= ?').get(sevenDaysAgo) as { n: number }).n;
   const sessionsThisWeek = (db.prepare('SELECT COUNT(*) as n FROM pomodoro_sessions WHERE started_at >= ?').get(sevenDaysAgo) as { n: number }).n;
-  const loginsToday = (db.prepare("SELECT COUNT(*) as n FROM audit_log WHERE action = 'login_ok' AND created_at >= ?").get(today) as { n: number }).n;
+  const loginsRow = db.prepare("SELECT count FROM usage_stats WHERE date = ? AND event = 'login_ok'").get(today) as { count: number } | undefined;
+  const loginsToday = loginsRow?.count ?? 0;
 
   res.json({ totalUsers, activeUsers, totalTasks, tasksThisWeek, sessionsThisWeek, loginsToday });
 });

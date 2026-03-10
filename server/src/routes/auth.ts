@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
-import { getDb, writeAuditLog } from '../db';
+import { getDb, writeAuditLog, incrementUsageStat } from '../db';
 import { jwtAuth, signAccessToken, JwtPayload } from '../middleware/jwtAuth';
 
 const router = Router();
@@ -114,7 +114,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
   `).get(codeUpper, new Date().toISOString()) as { id: string; used_by: string | null; expires_at: string | null } | undefined;
 
   if (!invite) {
-    writeAuditLog(null, 'register_fail', { reason: 'invalid_invite', email: normalEmail }, ip);
+    writeAuditLog(null, 'register_fail', { reason: 'invalid_invite' }, ip);
     res.status(400).json({ error: 'Invalid or expired invite code' });
     return;
   }
@@ -122,7 +122,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
   // Check email not already taken
   const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(normalEmail);
   if (existingUser) {
-    writeAuditLog(null, 'register_fail', { reason: 'email_taken', email: normalEmail }, ip);
+    writeAuditLog(null, 'register_fail', { reason: 'email_taken' }, ip);
     res.status(400).json({ error: 'An account with that email already exists' });
     return;
   }
@@ -130,12 +130,13 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
   const now = new Date().toISOString();
   const userId = uuidv4();
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  const keySalt = crypto.randomBytes(32).toString('hex');
 
   const doRegister = db.transaction(() => {
     db.prepare(`
-      INSERT INTO users (id, email, password_hash, role, is_active, token_version, created_at, updated_at)
-      VALUES (?, ?, ?, 'user', 1, 0, ?, ?)
-    `).run(userId, normalEmail, passwordHash, now, now);
+      INSERT INTO users (id, email, password_hash, key_salt, role, is_active, token_version, created_at, updated_at)
+      VALUES (?, ?, ?, ?, 'user', 1, 0, ?, ?)
+    `).run(userId, normalEmail, passwordHash, keySalt, now, now);
 
     db.prepare(`
       UPDATE invite_codes SET used_by = ?, used_at = ? WHERE id = ?
@@ -144,14 +145,15 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
 
   doRegister();
 
-  writeAuditLog(userId, 'register_ok', { email: normalEmail }, ip);
+  writeAuditLog(userId, 'register_ok', null, ip);
+  incrementUsageStat('register_ok');
 
   const user = { id: userId, email: normalEmail, role: 'user', token_version: 0 };
   const accessToken = signAccessToken(user);
   const refreshToken = issueRefreshToken(userId);
   setAuthCookies(res, accessToken, refreshToken);
 
-  res.status(201).json({ user: { id: userId, email: normalEmail, role: 'user' } });
+  res.status(201).json({ user: { id: userId, email: normalEmail, role: 'user' }, key_salt: keySalt });
 });
 
 // POST /api/auth/login
@@ -172,9 +174,9 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
   const normalEmail = email.trim().toLowerCase();
 
   const user = db.prepare(
-    'SELECT id, email, password_hash, role, is_active, token_version, deleted_at FROM users WHERE email = ?'
+    'SELECT id, email, password_hash, key_salt, role, is_active, token_version, deleted_at FROM users WHERE email = ?'
   ).get(normalEmail) as {
-    id: string; email: string; password_hash: string; role: string;
+    id: string; email: string; password_hash: string; key_salt: string | null; role: string;
     is_active: number; token_version: number; deleted_at: string | null;
   } | undefined;
 
@@ -184,17 +186,25 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
   const passwordMatch = await bcrypt.compare(password, hashToCompare);
 
   if (!user || !passwordMatch || !user.is_active || user.deleted_at) {
-    writeAuditLog(user?.id || null, 'login_fail', { email: normalEmail }, ip);
+    writeAuditLog(user?.id || null, 'login_fail', null, ip);
     res.status(401).json({ error: 'Invalid email or password' });
     return;
   }
 
-  writeAuditLog(user.id, 'login_ok', { email: normalEmail }, ip);
+  writeAuditLog(user.id, 'login_ok', null, ip);
+  incrementUsageStat('login_ok');
 
   // Progressively upgrade hashes stored with a higher cost factor
   if (user.password_hash.startsWith('$2') && !user.password_hash.startsWith(`$2b$${BCRYPT_ROUNDS}$`)) {
     const upgraded = await bcrypt.hash(password, BCRYPT_ROUNDS);
     getDb().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(upgraded, user.id);
+  }
+
+  // Ensure this user has a key_salt (backfill for accounts created before E2EE)
+  if (!user.key_salt) {
+    const newSalt = crypto.randomBytes(32).toString('hex');
+    getDb().prepare('UPDATE users SET key_salt = ? WHERE id = ?').run(newSalt, user.id);
+    user.key_salt = newSalt;
   }
 
   const accessToken = signAccessToken(user);
@@ -204,7 +214,7 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
   // Update last_seen_at
   db.prepare('UPDATE users SET updated_at = ? WHERE id = ?').run(new Date().toISOString(), user.id);
 
-  res.json({ user: { id: user.id, email: user.email, role: user.role } });
+  res.json({ user: { id: user.id, email: user.email, role: user.role }, key_salt: user.key_salt });
 });
 
 // POST /api/auth/logout

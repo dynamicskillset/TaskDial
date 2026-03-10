@@ -78,9 +78,10 @@ export function useSync({
       }
       onSessionsUpdated(storage.getLocalSessions(date));
 
-      // Merge settings
+      // Merge settings — iCal URLs live in localStorage only, don't let server overwrite them
       if (Object.keys(data.settings).length > 0) {
-        storage.saveLocalSettings(data.settings);
+        const localIcalUrls = storage.getLocalSettings().icalUrls;
+        storage.saveLocalSettings({ ...data.settings, icalUrls: localIcalUrls });
       }
       onSettingsUpdated(storage.getLocalSettings());
 
@@ -157,7 +158,9 @@ export function useSync({
     if (paused) return;
     storage.saveLocalSettings(settings);
     try {
-      await api.saveSettings(settings);
+      // iCal URLs stay in localStorage only — never sent to server
+      const { icalUrls: _ical, icalUrl: _icalLegacy, ...serverSettings } = settings as any;
+      await api.saveSettings(serverSettings);
     } catch {
       // Offline
     }

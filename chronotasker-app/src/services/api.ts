@@ -1,5 +1,6 @@
 import type { Task, PomodoroSession, AppSettings } from '../types';
 import type { AuthUser } from './auth';
+import * as cryptoService from './crypto';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -112,6 +113,9 @@ export async function login(email: string, password: string): Promise<AuthUser> 
     throw new Error((body as any).error || 'Login failed');
   }
   const data = await res.json();
+  if (data.key_salt) {
+    await cryptoService.initKey(password, data.key_salt, data.user.id);
+  }
   return data.user as AuthUser;
 }
 
@@ -127,6 +131,9 @@ export async function register(email: string, password: string, inviteCode: stri
     throw new Error((body as any).error || 'Registration failed');
   }
   const data = await res.json();
+  if (data.key_salt) {
+    await cryptoService.initKey(password, data.key_salt, data.user.id);
+  }
   return data.user as AuthUser;
 }
 
@@ -149,24 +156,65 @@ export async function refreshToken(): Promise<boolean> {
   return attemptRefresh();
 }
 
+// ── Task encryption helpers ────────────────────────────────────────────────────
+
+const ENCRYPTED_FIELDS = ['title', 'tag', 'details'] as const;
+
+async function encryptTask(task: Partial<Task>): Promise<Partial<Task>> {
+  if (!cryptoService.hasKey()) return task;
+  const out = { ...task };
+  for (const field of ENCRYPTED_FIELDS) {
+    const val = (out as any)[field];
+    if (typeof val === 'string' && val.length > 0) {
+      (out as any)[field] = await cryptoService.encrypt(val);
+    }
+  }
+  return out;
+}
+
+async function decryptTask(task: Task): Promise<Task> {
+  if (!cryptoService.hasKey()) return task;
+  const out = { ...task };
+  for (const field of ENCRYPTED_FIELDS) {
+    const val = (out as any)[field];
+    if (typeof val === 'string' && val.length > 0) {
+      try {
+        (out as any)[field] = await cryptoService.decrypt(val);
+      } catch {
+        // Decryption failed — leave as-is (may be plaintext from before E2EE)
+      }
+    }
+  }
+  return out;
+}
+
+async function decryptTasks(tasks: Task[]): Promise<Task[]> {
+  return Promise.all(tasks.map(decryptTask));
+}
+
 // ── Tasks ─────────────────────────────────────────────────────────────────────
 
 export async function fetchTasks(date: string): Promise<Task[]> {
-  return request<Task[]>(`/api/tasks?date=${date}`);
+  const tasks = await request<Task[]>(`/api/tasks?date=${date}`);
+  return decryptTasks(tasks);
 }
 
 export async function createTask(task: Task): Promise<Task> {
-  return request<Task>('/api/tasks', {
+  const encrypted = await encryptTask(task);
+  const result = await request<Task>('/api/tasks', {
     method: 'POST',
-    body: JSON.stringify(toApi(task)),
+    body: JSON.stringify(toApi(encrypted)),
   });
+  return decryptTask(result);
 }
 
 export async function updateTask(id: string, updates: Partial<Task>): Promise<Task> {
-  return request<Task>(`/api/tasks/${id}`, {
+  const encrypted = await encryptTask(updates);
+  const result = await request<Task>(`/api/tasks/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(toApi(updates)),
+    body: JSON.stringify(toApi(encrypted)),
   });
+  return decryptTask(result);
 }
 
 export async function deleteTask(id: string): Promise<void> {
@@ -231,16 +279,25 @@ export async function syncData(since: string): Promise<{
   settings: Partial<AppSettings>;
   serverTime: string;
 }> {
-  return request(`/api/sync?since=${encodeURIComponent(since)}`);
+  const data = await request<{
+    tasks: Task[];
+    pomodoroSessions: PomodoroSession[];
+    settings: Partial<AppSettings>;
+    serverTime: string;
+  }>(`/api/sync?since=${encodeURIComponent(since)}`);
+  data.tasks = await decryptTasks(data.tasks);
+  return data;
 }
 
 // ── Recurrence ────────────────────────────────────────────────────────────────
 
 export async function generateRecurring(date: string): Promise<{ created: Task[] }> {
-  return request<{ created: Task[] }>('/api/recurrence/generate', {
+  const result = await request<{ created: Task[] }>('/api/recurrence/generate', {
     method: 'POST',
     body: JSON.stringify({ date }),
   });
+  result.created = await decryptTasks(result.created);
+  return result;
 }
 
 // ── Calendar ──────────────────────────────────────────────────────────────────
@@ -300,7 +357,6 @@ export interface AuditEntry {
   detail: string | null;
   ip: string | null;
   created_at: string;
-  user_email: string | null;
 }
 
 export interface AdminStats {

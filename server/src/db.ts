@@ -128,9 +128,17 @@ function initTables(): void {
       PRIMARY KEY (user_id, key),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS usage_stats (
+      date TEXT NOT NULL,
+      event TEXT NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (date, event)
+    );
   `);
 
   // Migrations for existing databases
+  try { db.exec('ALTER TABLE users ADD COLUMN key_salt TEXT'); } catch { /* already exists */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN is_break INTEGER NOT NULL DEFAULT 0'); } catch { /* already exists */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN tag TEXT'); } catch { /* already exists */ }
   try { db.exec('ALTER TABLE tasks ADD COLUMN details TEXT'); } catch { /* already exists */ }
@@ -237,6 +245,18 @@ export function writeAuditLog(
     `).run(userId, action, detail ? JSON.stringify(detail) : null, ip, new Date().toISOString());
   } catch {
     // Audit log must never crash the app
+  }
+}
+
+export function incrementUsageStat(event: string): void {
+  try {
+    const date = new Date().toISOString().slice(0, 10);
+    getDb().prepare(`
+      INSERT INTO usage_stats (date, event, count) VALUES (?, ?, 1)
+      ON CONFLICT(date, event) DO UPDATE SET count = count + 1
+    `).run(date, event);
+  } catch {
+    // Never crash the app on stats tracking
   }
 }
 

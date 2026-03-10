@@ -306,7 +306,6 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
             <thead>
               <tr>
                 <th>Time</th>
-                <th>User</th>
                 <th>Action</th>
                 <th>IP</th>
                 <th>Detail</th>
@@ -316,14 +315,13 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
               {audit.map(entry => (
                 <tr key={entry.id}>
                   <td className="admin-table__nowrap">{formatDate(entry.created_at)}</td>
-                  <td>{entry.user_email || '—'}</td>
                   <td><code className="admin-code">{entry.action}</code></td>
                   <td>{entry.ip || '—'}</td>
                   <td className="admin-table__detail">{entry.detail || '—'}</td>
                 </tr>
               ))}
               {audit.length === 0 && (
-                <tr><td colSpan={5} className="admin-table__empty">No audit entries yet</td></tr>
+                <tr><td colSpan={4} className="admin-table__empty">No audit entries yet</td></tr>
               )}
             </tbody>
           </table>

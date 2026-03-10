@@ -19,7 +19,7 @@ There's a built-in Pomodoro timer too, so focused work and planning live in the 
 - **Backlog** — a place for tasks that don't belong to any particular day yet; move them to today when you're ready
 - **Undo/redo** — change your mind freely; undo or redo any action
 - **Works offline** — tasks save locally first and sync when you're back online; installable as a PWA
-- **Six colour schemes** — Berry (default), Nord, Aurora, Frost, Evergreen, Yellow
+- **Five colour schemes** — Berry (default), Nord, Aurora, Frost, Evergreen
 - **Accessible** — keyboard navigable and screen-reader friendly
 
 ---
@@ -36,11 +36,23 @@ TaskDial is currently in testing, so you'll need an invite code to sign up. Once
 
 ## Privacy
 
-TaskDial stores your tasks and settings on the server so they sync across your devices. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://chronotasker.dougbelshaw.com/privacy).
+TaskDial encrypts your task content (titles, tags, and notes) on your device before it reaches the server. The encryption key is derived from your password and never leaves your browser. iCal calendar URLs are stored only in your browser and are never sent to the server. The server sees only ciphertext — not your actual task data. It uses no third-party trackers, shares no data, and does not use your data to train AI models. Full details are in the [Privacy Policy](https://chronotasker.dougbelshaw.com/privacy).
 
 ---
 
 ## Changelog
+
+### v1.2.3 — 2026-03-10
+
+- **End-to-end encryption**: task titles, tags, and notes are encrypted on your device before being sent to the server. The encryption key is derived from your password and never leaves your browser. The server stores only ciphertext.
+- **Calendar URLs stay private**: iCal URLs are now stored only in your browser and are never synced to the server.
+- **Better login speed**: password verification now runs in the background rather than blocking the server, so login feels faster. Existing passwords are gradually upgraded to the faster approach.
+- **Navigation**: a week strip replaces the single previous/next arrows, so you can jump to any day in the current week at a glance. Week arrows let you move a full week at a time.
+- **Multiple tags**: tasks can now have several tags, separated by commas. Tags show as small coloured chips in the task list and on the clock.
+- **Clock hand colour**: the clock hand now uses a complementary colour to make it easier to see against your chosen colour scheme.
+- **Advanced mode**: the toggle now has a clearer description of what it unlocks — calendar feeds, recurring tasks, backlog, and Pomodoro timer.
+- **More options open by default**: the expanded task form is now shown by default when adding or editing a task.
+- **Removed Yellow colour scheme**: the yellow scheme has been removed. Existing users are automatically switched to Berry.
 
 ### v1.2.1 — 2026-03-10
 
