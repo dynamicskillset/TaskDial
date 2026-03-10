@@ -163,15 +163,18 @@ function App({ user, onLogout }: AppProps) {
   // Pomodoro
   const pomodoro = usePomodoro(settings);
 
+  // Stable callback — prevents sync interval restarting on every App render
+  const handleSettingsUpdated = useCallback((s: AppSettings) => {
+    // Migrate removed 'yellow' scheme to 'berry'
+    setSettings((s as any).colorScheme === 'yellow' ? { ...s, colorScheme: 'berry' } : s);
+  }, []);
+
   // Sync
   const { isOnline, isSyncing, pushTask, pushRecurringDelete, pushSession, pushSettings } = useSync({
     date,
     onTasksUpdated: setTasks,
     onSessionsUpdated: setSessions,
-    onSettingsUpdated: (s) => setSettings(
-      // Migrate removed 'yellow' scheme to 'berry'
-      (s as any).colorScheme === 'yellow' ? { ...s, colorScheme: 'berry' } : s
-    ),
+    onSettingsUpdated: handleSettingsUpdated,
     onAuthRequired: onLogout,
     enableRecurringTasks: settings.enableRecurringTasks,
     paused: demoMode,
@@ -344,6 +347,13 @@ function App({ user, onLogout }: AppProps) {
     () => `${currentTime.getHours()}:${currentTime.getMinutes()}`,
     [currentTime]
   );
+  // Date rounded to the current minute — passed to ClockFace so the SVG only re-renders
+  // once per minute instead of every second.
+  const currentMinuteTime = useMemo(() => {
+    const d = new Date(currentTime);
+    d.setSeconds(0, 0);
+    return d;
+  }, [currentMinuteKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const scheduledTasks = useMemo(
     () => scheduleTasks(tasks, settings.dayStartHour, settings.dayEndHour, currentTime, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1435,7 +1445,7 @@ function App({ user, onLogout }: AppProps) {
             dayStartHour={settings.dayStartHour}
             dayEndHour={settings.dayEndHour}
             use24Hour={settings.use24Hour}
-            currentTime={currentTime}
+            currentTime={currentMinuteTime}
             activeTaskId={activeTaskId}
             activeCalendarUid={activeCalendarUid}
             pomodoroState={pomodoroState}

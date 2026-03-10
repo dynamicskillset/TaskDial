@@ -315,7 +315,7 @@ const HourMarkers = React.memo(function HourMarkers() {
 });
 
 /** Strikethrough hatch pattern definition */
-function PatternDefs() {
+const PatternDefs = React.memo(function PatternDefs() {
   return (
     <defs>
       <pattern
@@ -354,7 +354,7 @@ function PatternDefs() {
       </pattern>
     </defs>
   );
-}
+});
 
 /** A single task arc segment */
 const TaskArc = React.memo(function TaskArc({
@@ -537,7 +537,7 @@ const CalendarArc = React.memo(function CalendarArc({
 });
 
 /** The red current-time hand */
-function TimeHand({
+const TimeHand = React.memo(function TimeHand({
   currentTime,
   dayStart,
   dayEnd,
@@ -569,10 +569,10 @@ function TimeHand({
       <circle cx={tip.x} cy={tip.y} r="3.5" className="clock-face__time-hand-dot" />
     </g>
   );
-}
+});
 
 /** Center text showing date and time */
-function CenterDisplay({
+const CenterDisplay = React.memo(function CenterDisplay({
   currentTime,
   use24Hour,
 }: {
@@ -615,7 +615,7 @@ function CenterDisplay({
       </text>
     </g>
   );
-}
+});
 
 /* ---- Main component ---- */
 
@@ -665,6 +665,30 @@ const ClockFace: React.FC<ClockFaceProps> = ({
       ? pomodoroState.currentTaskId
       : null;
 
+  // Precompute which events should suppress their buffer arc — avoids O(n²) work inside JSX
+  const calendarArcs = useMemo(() => calendarEvents.map((event) => {
+    const bufferEnd = event.endMinutes + meetingBufferMinutes;
+    const blockedByEvent = calendarEvents.some(
+      (other) => !other.allDay && other !== event && other.startMinutes < bufferEnd && other.startMinutes >= event.endMinutes,
+    );
+    const blockedByBreak = slots.some((slot) => {
+      if (!slot.task.isBreak) return false;
+      const slotStart = slot.startHour * 60 + slot.startMinute;
+      const slotEnd = slot.endHour * 60 + slot.endMinute;
+      return slotStart < bufferEnd && slotEnd > event.endMinutes;
+    });
+    return (
+      <CalendarArc
+        key={event.uid}
+        event={event}
+        meetingBufferMinutes={meetingBufferMinutes}
+        showBuffer={!blockedByEvent && !blockedByBreak}
+        isActive={event.uid === activeCalendarUid}
+        onCalendarEventClick={onCalendarEventClick}
+      />
+    );
+  }), [calendarEvents, meetingBufferMinutes, slots, activeCalendarUid, onCalendarEventClick]);
+
   return (
     <div className="clock-face">
       <svg
@@ -693,29 +717,7 @@ const ClockFace: React.FC<ClockFaceProps> = ({
         <HourMarkers />
 
         {/* Calendar event arcs (inside the ring, behind task arcs) */}
-        {calendarEvents.map((event) => {
-          // Suppress buffer if another event or a scheduled break already covers the buffer window
-          const bufferEnd = event.endMinutes + meetingBufferMinutes;
-          const blockedByEvent = calendarEvents.some(
-            (other) => !other.allDay && other !== event && other.startMinutes < bufferEnd && other.startMinutes >= event.endMinutes,
-          );
-          const blockedByBreak = slots.some((slot) => {
-            if (!slot.task.isBreak) return false;
-            const slotStart = slot.startHour * 60 + slot.startMinute;
-            const slotEnd = slot.endHour * 60 + slot.endMinute;
-            return slotStart < bufferEnd && slotEnd > event.endMinutes;
-          });
-          return (
-            <CalendarArc
-              key={event.uid}
-              event={event}
-              meetingBufferMinutes={meetingBufferMinutes}
-              showBuffer={!blockedByEvent && !blockedByBreak}
-              isActive={event.uid === activeCalendarUid}
-              onCalendarEventClick={onCalendarEventClick}
-            />
-          );
-        })}
+        {calendarArcs}
 
         {/* Task arcs (drawn on top of calendar arcs) */}
         {slots.map((slot) => (

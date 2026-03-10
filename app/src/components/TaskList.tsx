@@ -24,10 +24,13 @@ interface TaskListProps {
   onTryDemo?: () => void;
 }
 
+// Compiled once at module load — avoids recompilation on every renderInline call
+const INLINE_PATTERN = /(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\*\*[^*]+\*\*)|(\*[^*]+\*)|(https?:\/\/[^\s<>"')\]]+)/g;
+
 /** Lightweight markdown: bold, italic, code, [links](url), bare URLs */
 function renderInline(text: string): ReactNode[] {
   // Priority: code > markdown link > bold > italic > bare URL
-  const pattern = /(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\*\*[^*]+\*\*)|(\*[^*]+\*)|(https?:\/\/[^\s<>"')\]]+)/g;
+  const pattern = new RegExp(INLINE_PATTERN.source, INLINE_PATTERN.flags);
   const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
