@@ -1,9 +1,73 @@
 import type { Task, PomodoroSession, AppSettings } from '../types';
+import type { AuthUser } from './auth';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
 
-// Snake_case to camelCase conversion for API responses
+// ── 401 intercept with token refresh ─────────────────────────────────────────
+
+let isRefreshing = false;
+let refreshQueue: Array<() => void> = [];
+
+function notifyAuthExpired(): void {
+  window.dispatchEvent(new CustomEvent('auth:expired'));
+}
+
+async function attemptRefresh(): Promise<boolean> {
+  if (isRefreshing) {
+    // Another request is already refreshing — wait for it
+    return new Promise(resolve => {
+      refreshQueue.push(() => resolve(true));
+    });
+  }
+
+  isRefreshing = true;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const ok = res.ok;
+    refreshQueue.forEach(fn => fn());
+    refreshQueue = [];
+    return ok;
+  } catch {
+    return false;
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+// ── Core request ──────────────────────────────────────────────────────────────
+
+async function request<T>(path: string, options: RequestInit = {}, isRetry = false): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (res.status === 401 && !isRetry) {
+    const refreshed = await attemptRefresh();
+    if (refreshed) {
+      return request<T>(path, options, true);
+    }
+    notifyAuthExpired();
+    throw new Error('Session expired');
+  }
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+
+  const json = await res.json();
+  return fromApi<T>(json);
+}
+
+// ── snake_case / camelCase conversion ─────────────────────────────────────────
+
 function snakeToCamel(str: string): string {
   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 }
@@ -34,25 +98,59 @@ function toApi<T>(data: unknown): T {
   return convertKeys<T>(data, camelToSnake);
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Token': API_TOKEN,
-      ...options.headers,
-    },
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+export async function login(email: string, password: string): Promise<AuthUser> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   });
-
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error || 'Login failed');
   }
-
-  const json = await res.json();
-  return fromApi<T>(json);
+  const data = await res.json();
+  return data.user as AuthUser;
 }
 
-// Tasks
+export async function register(email: string, password: string, inviteCode: string): Promise<AuthUser> {
+  const res = await fetch(`${API_URL}/api/auth/register`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, invite_code: inviteCode }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error || 'Registration failed');
+  }
+  const data = await res.json();
+  return data.user as AuthUser;
+}
+
+export async function logout(): Promise<void> {
+  await fetch(`${API_URL}/api/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  }).catch(() => {/* best effort */});
+}
+
+export async function getMe(): Promise<AuthUser | null> {
+  const res = await fetch(`${API_URL}/api/auth/me`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function refreshToken(): Promise<boolean> {
+  return attemptRefresh();
+}
+
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+
 export async function fetchTasks(date: string): Promise<Task[]> {
   return request<Task[]>(`/api/tasks?date=${date}`);
 }
@@ -92,7 +190,8 @@ export async function reorderTasks(taskOrders: { id: string; sortOrder: number }
   });
 }
 
-// Pomodoro
+// ── Pomodoro ──────────────────────────────────────────────────────────────────
+
 export async function fetchSessions(date: string): Promise<PomodoroSession[]> {
   return request<PomodoroSession[]>(`/api/pomodoro/sessions?date=${date}`);
 }
@@ -111,7 +210,8 @@ export async function updateSession(id: string, updates: Partial<PomodoroSession
   });
 }
 
-// Settings
+// ── Settings ──────────────────────────────────────────────────────────────────
+
 export async function fetchSettings(): Promise<Partial<AppSettings>> {
   return request<Partial<AppSettings>>('/api/settings');
 }
@@ -123,7 +223,8 @@ export async function saveSettings(settings: Partial<AppSettings>): Promise<void
   });
 }
 
-// Sync
+// ── Sync ──────────────────────────────────────────────────────────────────────
+
 export async function syncData(since: string): Promise<{
   tasks: Task[];
   pomodoroSessions: PomodoroSession[];
@@ -133,7 +234,8 @@ export async function syncData(since: string): Promise<{
   return request(`/api/sync?since=${encodeURIComponent(since)}`);
 }
 
-// Recurrence
+// ── Recurrence ────────────────────────────────────────────────────────────────
+
 export async function generateRecurring(date: string): Promise<{ created: Task[] }> {
   return request<{ created: Task[] }>('/api/recurrence/generate', {
     method: 'POST',
@@ -141,12 +243,11 @@ export async function generateRecurring(date: string): Promise<{ created: Task[]
   });
 }
 
-// Calendar
+// ── Calendar ──────────────────────────────────────────────────────────────────
+
 export async function fetchCalendar(url: string): Promise<string> {
   const res = await fetch(`${API_URL}/api/calendar/fetch?url=${encodeURIComponent(url)}`, {
-    headers: {
-      'X-API-Token': API_TOKEN,
-    },
+    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -157,7 +258,8 @@ export async function fetchCalendar(url: string): Promise<string> {
   return res.text();
 }
 
-// Analytics
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
 export async function logInstallEvent(event: 'impression' | 'install' | 'dismiss'): Promise<void> {
   try {
     await request('/api/analytics/install', {
@@ -165,11 +267,100 @@ export async function logInstallEvent(event: 'impression' | 'install' | 'dismiss
       body: JSON.stringify({ event, timestamp: new Date().toISOString() }),
     });
   } catch {
-    // Best-effort — don't break the app for analytics
+    // Best-effort
   }
 }
 
-// Health check
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: string;
+  is_active: number;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+  last_seen: string | null;
+}
+
+export interface AdminInvite {
+  id: string;
+  code: string;
+  expires_at: string | null;
+  created_at: string;
+  used_at: string | null;
+  created_by_email: string;
+  used_by_email: string | null;
+}
+
+export interface AuditEntry {
+  id: number;
+  action: string;
+  detail: string | null;
+  ip: string | null;
+  created_at: string;
+  user_email: string | null;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalTasks: number;
+  tasksThisWeek: number;
+  sessionsThisWeek: number;
+  loginsToday: number;
+}
+
+async function adminRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  return request<T>(`/api/admin${path}`, options);
+}
+
+export async function fetchAdminUsers(): Promise<{ active: AdminUser[]; deleted: AdminUser[] }> {
+  return adminRequest('/users');
+}
+
+export async function disableUser(id: string): Promise<void> {
+  await adminRequest(`/users/${id}/disable`, { method: 'PATCH' });
+}
+
+export async function enableUser(id: string): Promise<void> {
+  await adminRequest(`/users/${id}/enable`, { method: 'PATCH' });
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await adminRequest(`/users/${id}`, { method: 'DELETE' });
+}
+
+export async function purgeUser(id: string): Promise<void> {
+  await adminRequest(`/users/${id}/purge`, { method: 'DELETE' });
+}
+
+export async function fetchAdminInvites(): Promise<AdminInvite[]> {
+  return adminRequest('/invites');
+}
+
+export async function createInvite(expiresAt?: string): Promise<AdminInvite> {
+  return adminRequest('/invites', {
+    method: 'POST',
+    body: JSON.stringify({ expires_at: expiresAt || null }),
+  });
+}
+
+export async function revokeInvite(id: string): Promise<void> {
+  await adminRequest(`/invites/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchAuditLog(): Promise<AuditEntry[]> {
+  return adminRequest('/audit');
+}
+
+export async function fetchAdminStats(): Promise<AdminStats> {
+  return adminRequest('/stats');
+}
+
+// ── Health ────────────────────────────────────────────────────────────────────
+
 export async function healthCheck(): Promise<boolean> {
   try {
     const res = await fetch(`${API_URL}/health`);

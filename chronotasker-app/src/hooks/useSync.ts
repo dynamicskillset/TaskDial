@@ -8,6 +8,7 @@ interface UseSyncOptions {
   onTasksUpdated: (tasks: Task[]) => void;
   onSessionsUpdated: (sessions: PomodoroSession[]) => void;
   onSettingsUpdated: (settings: AppSettings) => void;
+  onAuthRequired?: () => void;
   date: string;
   enableRecurringTasks?: boolean;
   paused?: boolean;
@@ -18,6 +19,7 @@ export function useSync({
   onTasksUpdated,
   onSessionsUpdated,
   onSettingsUpdated,
+  onAuthRequired,
   date,
   enableRecurringTasks = false,
   paused = false,
@@ -85,7 +87,11 @@ export function useSync({
       // Update sync timestamp (ref only — no state change, no re-render loop)
       lastSyncTimeRef.current = data.serverTime;
       storage.setLastSync(data.serverTime);
-    } catch {
+    } catch (err: any) {
+      if (err?.message === 'Session expired') {
+        onAuthRequired?.();
+        return;
+      }
       setIsOnline(false);
       // Fall back to local
       onTasksUpdated(storage.getLocalTasks(date));

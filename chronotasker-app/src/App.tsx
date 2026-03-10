@@ -24,9 +24,16 @@ import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useTaskNotifications } from './hooks/useTaskNotifications';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
+import { isAdmin } from './services/auth';
+import type { AuthUser } from './services/auth';
 import './App.css';
 
-function App() {
+interface AppProps {
+  user: AuthUser;
+  onLogout: () => void;
+}
+
+function App({ user, onLogout }: AppProps) {
   const [date, setDate] = useState(todayString());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !localStorage.getItem('chronotasker-visited'));
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -100,6 +107,7 @@ function App() {
     onTasksUpdated: setTasks,
     onSessionsUpdated: setSessions,
     onSettingsUpdated: setSettings,
+    onAuthRequired: onLogout,
     enableRecurringTasks: settings.enableRecurringTasks,
     paused: demoMode,
   });
@@ -807,8 +815,16 @@ function App() {
           <span className={`sync-indicator ${demoMode ? 'demo' : isOnline ? 'online' : 'offline'}`} aria-live="polite">
             {demoMode ? 'demo' : isSyncing ? 'syncing...' : isOnline ? 'online' : 'offline'}
           </span>
+          {isAdmin() && (
+            <a href="/admin" className="header-admin-link" title={`Signed in as ${user.email}`}>
+              Admin
+            </a>
+          )}
           <button className="settings-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Settings" aria-expanded={showSettings} aria-controls="settings-panel" title="Settings">
             &#9881;
+          </button>
+          <button className="settings-btn" onClick={onLogout} aria-label="Log out" title={`Log out (${user.email})`}>
+            &#x2192;
           </button>
         </div>
       </header>

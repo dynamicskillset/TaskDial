@@ -6,8 +6,11 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { getDb, closeDb } from './db';
-import { authMiddleware } from './middleware/auth';
+import { jwtAuth, requireRole } from './middleware/jwtAuth';
+import authRouter from './routes/auth';
+import adminRouter from './routes/admin';
 import tasksRouter from './routes/tasks';
 import pomodoroRouter from './routes/pomodoro';
 import settingsRouter from './routes/settings';
@@ -20,16 +23,24 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Middleware
-app.use(cors());
+const allowedOrigin = process.env.APP_ORIGIN || 'http://localhost:5173';
+app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Health check (no auth required)
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Auth middleware for all /api routes
-app.use('/api', authMiddleware);
+// Auth routes (public — no authMiddleware)
+app.use('/api/auth', authRouter);
+
+// JWT auth for all /api routes (except /api/auth which is mounted above)
+app.use('/api', jwtAuth);
+
+// Admin routes (jwt already applied above; additionally require admin or owner role)
+app.use('/api/admin', requireRole('admin', 'owner'), adminRouter);
 
 // Routes
 app.use('/api/tasks', tasksRouter);

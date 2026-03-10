@@ -7,6 +7,7 @@ const router = Router();
 // GET /api/pomodoro/sessions?date=YYYY-MM-DD
 router.get('/sessions', (req: Request, res: Response) => {
   const { date } = req.query;
+  const userId = req.user!.id;
 
   if (!date || typeof date !== 'string') {
     res.status(400).json({ error: 'date query parameter is required (YYYY-MM-DD)' });
@@ -15,14 +16,15 @@ router.get('/sessions', (req: Request, res: Response) => {
 
   const db = getDb();
   const sessions = db.prepare(
-    'SELECT * FROM pomodoro_sessions WHERE date = ? ORDER BY started_at ASC'
-  ).all(date);
+    'SELECT * FROM pomodoro_sessions WHERE date = ? AND user_id = ? ORDER BY started_at ASC'
+  ).all(date, userId);
 
   res.json(sessions);
 });
 
 // POST /api/pomodoro/sessions
 router.post('/sessions', (req: Request, res: Response) => {
+  const userId = req.user!.id;
   const {
     id,
     task_id = null,
@@ -49,11 +51,11 @@ router.post('/sessions', (req: Request, res: Response) => {
 
   try {
     db.prepare(`
-      INSERT INTO pomodoro_sessions (id, task_id, type, duration_minutes, started_at, completed_at, date)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(sessionId, task_id, type, duration_minutes, started_at, completed_at, date);
+      INSERT INTO pomodoro_sessions (id, user_id, task_id, type, duration_minutes, started_at, completed_at, date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(sessionId, userId, task_id, type, duration_minutes, started_at, completed_at, date);
 
-    const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?').get(sessionId);
+    const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ? AND user_id = ?').get(sessionId, userId);
     res.status(201).json(session);
   } catch (err: any) {
     if (err.message?.includes('UNIQUE constraint failed')) {
@@ -67,10 +69,11 @@ router.post('/sessions', (req: Request, res: Response) => {
 // PUT /api/pomodoro/sessions/:id
 router.put('/sessions/:id', (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user!.id;
   const updates = req.body;
 
   const db = getDb();
-  const existing = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?').get(id);
+  const existing = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ? AND user_id = ?').get(id, userId);
 
   if (!existing) {
     res.status(404).json({ error: 'Session not found' });
@@ -93,10 +96,10 @@ router.put('/sessions/:id', (req: Request, res: Response) => {
     return;
   }
 
-  values.push(id);
-  db.prepare(`UPDATE pomodoro_sessions SET ${setClauses.join(', ')} WHERE id = ?`).run(...values);
+  values.push(id, userId);
+  db.prepare(`UPDATE pomodoro_sessions SET ${setClauses.join(', ')} WHERE id = ? AND user_id = ?`).run(...values);
 
-  const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?').get(id);
+  const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ? AND user_id = ?').get(id, userId);
   res.json(session);
 });
 

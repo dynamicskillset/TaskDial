@@ -21,8 +21,6 @@ jobs:
             server/package-lock.json
 
       - name: Build frontend
-        env:
-          VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
         run: |
           cd chronotasker-app
           npm ci
