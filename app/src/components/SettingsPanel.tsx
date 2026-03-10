@@ -41,6 +41,8 @@ export interface SettingsPanelProps {
   importWorking: boolean;
   onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenDeleteModal: () => void;
+  onLogout: () => void;
+  userEmail: string;
 }
 
 /* ---- Primitive controls ---- */
@@ -144,6 +146,8 @@ export function SettingsPanel({
   importWorking,
   onImport,
   onOpenDeleteModal,
+  onLogout,
+  userEmail,
 }: SettingsPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('look');
 
@@ -555,6 +559,17 @@ export function SettingsPanel({
                 </p>
               )}
 
+              <div className="sp-account-action">
+                <div className="sp-account-action__text">
+                  <span className="sp-account-action__label">Signed in as</span>
+                  <span className="sp-account-action__desc">{userEmail}</span>
+                </div>
+                <button className="sp-action-btn" onClick={onLogout}>
+                  Sign out
+                </button>
+              </div>
+
+              <Divider />
               <SectionLabel>Your data</SectionLabel>
 
               <div className="sp-account-action">

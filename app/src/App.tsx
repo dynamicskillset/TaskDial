@@ -997,9 +997,6 @@ function App({ user, onLogout }: AppProps) {
           <button className="settings-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Settings" aria-expanded={showSettings} aria-controls="settings-panel" title="Settings">
             &#9881;
           </button>
-          <button className="settings-btn" onClick={onLogout} aria-label="Log out" title={`Log out (${user.email})`}>
-            &#x2192;
-          </button>
         </div>
       </header>
 
@@ -1045,6 +1042,8 @@ function App({ user, onLogout }: AppProps) {
           importWorking={importWorking}
           onImport={handleImport}
           onOpenDeleteModal={() => { setShowDeleteModal(true); setDeleteError(''); setDeletePassword(''); setDeleteConfirmed(false); }}
+          onLogout={onLogout}
+          userEmail={user.email}
         />
       )}
 
