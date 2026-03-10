@@ -40,7 +40,7 @@ export function useTaskNotifications(
       // Notify when we enter the task's starting minute
       if (task.scheduledStart === nowMinutes) {
         notifiedRef.current.add(key);
-        new Notification('ChronoTasker', {
+        new Notification('TaskDial', {
           body: `Time to start: ${task.title}`,
           icon: '/favicon.svg',
           tag: key,

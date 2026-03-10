@@ -66,7 +66,7 @@ console.log('Database initialised');
 
 // Start server
 const server = app.listen(PORT, () => {
-  console.log(`ChronoTasker server running on port ${PORT}`);
+  console.log(`TaskDial server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });
 

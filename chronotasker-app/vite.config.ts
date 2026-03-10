@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'ChronoTasker',
-        short_name: 'ChronoTasker',
+        name: 'TaskDial',
+        short_name: 'TaskDial',
         description: 'See your day as time, not a list. Visual time blocks on a clock face with built-in Pomodoro focus sessions.',
         theme_color: '#2E3440',
         background_color: '#2E3440',

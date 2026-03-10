@@ -133,13 +133,13 @@ export function usePomodoro(settings: AppSettings) {
     if (settings.enableSounds) playBeep();
     if (state.type === 'work') {
       sendNotification(
-        'ChronoTasker',
+        'TaskDial',
         nextType === 'longBreak'
           ? 'Great work! Time for a long break.'
           : 'Time for a break!'
       );
     } else {
-      sendNotification('ChronoTasker', "Break's over! Time to focus.");
+      sendNotification('TaskDial', "Break's over! Time to focus.");
     }
 
     const nextDuration = getDurationSeconds(nextType, settings);

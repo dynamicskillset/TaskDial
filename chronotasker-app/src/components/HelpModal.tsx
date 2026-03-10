@@ -111,7 +111,7 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
         aria-labelledby="help-modal-title"
       >
         <div className="help-modal__header">
-          <h2 id="help-modal-title" className="help-modal__title">How to use ChronoTasker</h2>
+          <h2 id="help-modal-title" className="help-modal__title">How to use TaskDial</h2>
           <button
             className="help-modal__close"
             onClick={onClose}
@@ -142,7 +142,7 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
           <div className="help-modal__divider" />
 
           <p className="help-modal__intro">
-            ChronoTasker is a visual time-planning tool. Instead of a flat to-do list,
+            TaskDial is a visual time-planning tool. Instead of a flat to-do list,
             you see your day as a clock — each task is a coloured arc. A built-in
             Pomodoro timer helps you work in focused bursts.
           </p>
@@ -241,16 +241,16 @@ export default function HelpModal({ open, onClose, demoMode, onToggleDemoMode }:
               </p>
             </FaqItem>
 
-            <FaqItem question="Does ChronoTasker read my calendar data?">
+            <FaqItem question="Does TaskDial read my calendar data?">
               <p>
-                Your calendar feed is fetched directly from your browser — ChronoTasker
+                Your calendar feed is fetched directly from your browser — TaskDial
                 never stores or transmits calendar data to the server. Events are only
                 held in memory while the app is open and are not saved alongside your
                 tasks.
               </p>
             </FaqItem>
 
-            <FaqItem question="What data does ChronoTasker store about me?">
+            <FaqItem question="What data does TaskDial store about me?">
               <p>
                 Your account email, a hashed password, your tasks, settings, and Pomodoro
                 session records. We also keep a security audit log (login events, admin

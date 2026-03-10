@@ -25,7 +25,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'system-ui, sans-serif', color: 'var(--color-text)' }}>
           <h1 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Something went wrong</h1>
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
-            ChronoTasker hit an unexpected error. Your tasks are safe in local storage.
+            TaskDial hit an unexpected error. Your tasks are safe in local storage.
           </p>
           <button
             onClick={() => this.setState({ hasError: false })}

@@ -62,6 +62,42 @@ function App({ user, onLogout }: AppProps) {
   const [recurringDeleteTask, setRecurringDeleteTask] = useState<Task | null>(null);
   const [demoMode, setDemoMode] = useState(false);
 
+  // Theme (light / system / dark)
+  const [tdTheme, setTdTheme] = useState<'light' | 'system' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem('td-theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch { /* ignore */ }
+    return 'system';
+  });
+
+  useEffect(() => {
+    function applyTheme(pref: 'light' | 'system' | 'dark') {
+      if (pref === 'system') {
+        const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', pref);
+      }
+    }
+    applyTheme(tdTheme);
+
+    if (tdTheme === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = () => applyTheme('system');
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+  }, [tdTheme]);
+
+  function handleThemeChange(next: 'light' | 'system' | 'dark') {
+    setTdTheme(next);
+    try {
+      if (next === 'system') localStorage.removeItem('td-theme');
+      else localStorage.setItem('td-theme', next);
+    } catch { /* ignore */ }
+  }
+
   // Data & account section
   const [dataActionStatus, setDataActionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [importWorking, setImportWorking] = useState(false);
@@ -850,18 +886,18 @@ function App({ user, onLogout }: AppProps) {
   const pomodoroState: PomodoroState = pomodoro.state;
 
   return (
-    <div className={`app dark${settings.colorScheme && settings.colorScheme !== 'nord' ? ` scheme-${settings.colorScheme}` : ''}`}>
+    <div className={`app${settings.colorScheme && settings.colorScheme !== 'nord' ? ` scheme-${settings.colorScheme}` : ''}`}>
       <header className="app-header">
         <div className="app-title-group">
           <h1 className="app-title">
             <img src="/favicon.svg" alt="" className="app-logo" aria-hidden="true" />
-            ChronoTasker
+            <span className="app-title__wordmark">TaskDial</span>
           </h1>
           <button
             className="help-trigger-btn"
             onClick={() => setShowHelp(true)}
-            aria-label="How to use ChronoTasker"
-            title="How to use ChronoTasker"
+            aria-label="How to use TaskDial"
+            title="How to use TaskDial"
           >
             ?
           </button>
@@ -927,6 +963,24 @@ function App({ user, onLogout }: AppProps) {
               <input type="checkbox" checked={settings.advancedMode} onChange={e => { const s = { ...settings, advancedMode: e.target.checked }; setSettings(s); debouncedPushSettings(s); }} />
               <span className="toggle-switch__track" aria-hidden="true" />
             </label>
+          </div>
+
+          {/* Theme */}
+          <div className="settings-divider" />
+          <div className="settings-row">
+            <span className="settings-row__label">Appearance</span>
+            <div className="theme-toggle" role="group" aria-label="Colour scheme preference">
+              {(['light', 'system', 'dark'] as const).map(opt => (
+                <button
+                  key={opt}
+                  className={`theme-toggle__btn${tdTheme === opt ? ' theme-toggle__btn--active' : ''}`}
+                  onClick={() => handleThemeChange(opt)}
+                  aria-pressed={tdTheme === opt}
+                >
+                  {opt === 'light' ? '☀ Light' : opt === 'dark' ? '☾ Dark' : '⊙ System'}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Display + Scheduling: side-by-side on desktop when both visible */}
@@ -1645,8 +1699,8 @@ function App({ user, onLogout }: AppProps) {
         <div className="install-banner" role="status">
           <span className="install-banner__text">
             {isIOS
-              ? 'Install ChronoTasker: tap Share, then "Add to Home Screen".'
-              : 'Install ChronoTasker for quick access from your home screen.'}
+              ? 'Install TaskDial: tap Share, then "Add to Home Screen".'
+              : 'Install TaskDial for quick access from your home screen.'}
           </span>
           <div className="install-banner__actions">
             {!isIOS && (

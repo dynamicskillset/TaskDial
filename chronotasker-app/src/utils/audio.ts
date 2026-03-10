@@ -1,4 +1,4 @@
-/** Shared Web Audio utilities for ChronoTasker */
+/** Shared Web Audio utilities for TaskDial */
 
 let sharedAudioCtx: AudioContext | null = null;
 

@@ -34,6 +34,49 @@
   height: 1.75rem;
 }
 
+.app-title__wordmark {
+  font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+}
+
+/* ── Theme toggle ───────────────────────────────────────────────────────────── */
+
+.theme-toggle {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.theme-toggle__btn {
+  flex: 1;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-family: inherit;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.theme-toggle__btn + .theme-toggle__btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.theme-toggle__btn--active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.theme-toggle__btn:not(.theme-toggle__btn--active):hover {
+  background: var(--color-hover-bg);
+  color: var(--color-text);
+}
+
 .header-status {
   display: flex;
   align-items: center;
@@ -825,7 +868,7 @@
 }
 
 .day-summary__value {
-  font-family: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
   font-size: 0.75rem;
   color: var(--color-text);
 }
@@ -947,7 +990,7 @@
 }
 
 .calendar-events__time {
-  font-family: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
   font-size: 0.7rem;
   color: var(--color-text-secondary);
   white-space: nowrap;
@@ -1023,7 +1066,7 @@
 .collapsible-section__summary {
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
   padding: 0.125rem 0.5rem;
   border-radius: 999px;
   white-space: nowrap;
@@ -1504,6 +1547,7 @@
 .auth-logo {
   font-size: 1.5rem;
   font-weight: 700;
+  font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
   color: var(--text);
   margin: 0 0 0.25rem;
 }

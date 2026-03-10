@@ -194,7 +194,7 @@ function seedOwner(): void {
 
   console.log('');
   console.log('='.repeat(60));
-  console.log('  ChronoTasker owner account created');
+  console.log('  TaskDial owner account created');
   console.log(`  Email:    ${ownerEmail.trim().toLowerCase()}`);
   if (generated) {
     console.log(`  Password: ${password}`);

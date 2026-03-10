@@ -76,7 +76,7 @@ export default function LoginPage({ onSuccess, expired = false }: LoginPageProps
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
-          <h1 className="auth-logo">ChronoTasker</h1>
+          <h1 className="auth-logo">TaskDial</h1>
           <p className="auth-tagline">Plan your day visually</p>
         </div>
 
@@ -85,7 +85,7 @@ export default function LoginPage({ onSuccess, expired = false }: LoginPageProps
         )}
 
         <p className="auth-privacy-notice">
-          By using ChronoTasker you agree to our{' '}
+          By using TaskDial you agree to our{' '}
           <a href="/privacy" className="auth-privacy-notice__link">Privacy Policy</a>.
         </p>
 

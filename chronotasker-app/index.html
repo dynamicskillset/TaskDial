@@ -7,14 +7,26 @@
     <meta name="theme-color" content="#2E3440" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ECEFF4" media="(prefers-color-scheme: light)" />
     <link rel="preconnect" href="https://fonts.bunny.net" />
-    <link rel="preload" href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|space-mono:400,700" as="style" />
-    <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|space-mono:400,700" rel="stylesheet" media="print" onload="this.media='all'" />
-    <meta name="description" content="See your day as time, not a list. ChronoTasker turns tasks into visual time blocks on a clock face, with built-in Pomodoro focus sessions." />
+    <link rel="preload" href="https://fonts.bunny.net/css?family=fraunces:300,400,700|dm-sans:400,500,600,700" as="style" />
+    <link href="https://fonts.bunny.net/css?family=fraunces:300,400,700|dm-sans:400,500,600,700" rel="stylesheet" media="print" onload="this.media='all'" />
+    <meta name="description" content="See your day as time, not a list. TaskDial turns tasks into visual time blocks on a clock face, with built-in Pomodoro focus sessions." />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <title>ChronoTasker</title>
+    <title>TaskDial</title>
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('td-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = (saved === 'light' || saved === 'dark')
+            ? saved
+            : (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
-    <noscript>ChronoTasker requires JavaScript. Please enable it in your browser settings.</noscript>
+    <noscript>TaskDial requires JavaScript. Please enable it in your browser settings.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
