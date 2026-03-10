@@ -28,7 +28,7 @@ ChronoTasker is currently in testing. To get access, ask for an invite code. Onc
 
 1. Go to [chronotasker.dougbelshaw.com](https://chronotasker.dougbelshaw.com)
 2. Click **Create account**, enter your email, a password (12+ characters), and your invite code
-3. Install to your home screen for the best experience (works on Android, iOS, Mac, and Linux)
+3. Install to your home screen for the best experience (Android and iOS) or as a desktop app via Chrome or Edge (Mac and Linux)
 
 ---
 
