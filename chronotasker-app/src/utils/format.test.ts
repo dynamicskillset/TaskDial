@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { tagHue, tagColor, tagBgColor, formatDuration } from './format';
 
-const TAG_HUES = [15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345];
+const TAG_HUES = [5, 50, 95, 145, 185, 225, 270, 320];
 
 describe('tagHue', () => {
-  it('returns a value from the fixed 12-hue palette', () => {
+  it('returns a value from the fixed 8-hue palette', () => {
     const hue = tagHue('work');
     expect(TAG_HUES).toContain(hue);
   });
@@ -31,7 +31,7 @@ describe('tagHue', () => {
     // 'Work' and 'work' are different strings and may land on different slots
     const lower = tagHue('work');
     const upper = tagHue('Work');
-    // Both must be valid palette values regardless of whether they differ
+    // Both must be valid 8-hue palette values
     expect(TAG_HUES).toContain(lower);
     expect(TAG_HUES).toContain(upper);
   });

@@ -1,6 +1,7 @@
-// 12 hues, 30° apart starting at 15°, avoids pure primaries which can look garish.
-// Any two tags that land on different slots are guaranteed ≥30° apart.
-const TAG_HUES = [15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345];
+// 8 hues, 45° apart — each maps to a clearly distinct perceptual colour:
+// red, amber, yellow-green, green, teal, blue, purple, pink.
+// Wider gaps mean tags that hash to adjacent slots still look obviously different.
+const TAG_HUES = [5, 50, 95, 145, 185, 225, 270, 320];
 
 /** Deterministic hue from a tag string. Same tag always returns the same hue;
  *  different tags are distributed across 12 evenly-spaced hue slots. */
