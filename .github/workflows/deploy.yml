@@ -40,7 +40,7 @@ jobs:
       - name: Deploy frontend to VPS
         run: |
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30" chronotasker-app/dist/ root@${{ secrets.VPS_HOST }}:/opt/chronotasker/frontend/
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 root@${{ secrets.VPS_HOST }} 'cp -r /opt/chronotasker/frontend/* /opt/ghost/sites/chronotasker/'
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 root@${{ secrets.VPS_HOST }} 'mkdir -p /opt/ghost/sites/taskdial && cp -r /opt/chronotasker/frontend/. /opt/ghost/sites/taskdial/'
 
       - name: Deploy server to VPS
         run: |
