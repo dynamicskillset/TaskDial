@@ -153,8 +153,14 @@ export function SettingsPanel({
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
 
   const set = useCallback(
-    (changes: Partial<AppSettings>) => onSettingChange({ ...settings, ...changes }),
-    [onSettingChange, settings],
+    (changes: Partial<AppSettings>) => {
+      // If turning off advanced mode while on an advanced-only tab, go back to Look
+      if (changes.advancedMode === false && (activeTab === 'calendars' || activeTab === 'timer')) {
+        setActiveTab('look');
+      }
+      onSettingChange({ ...settings, ...changes });
+    },
+    [onSettingChange, settings, activeTab],
   );
 
   const formatHour = (hour: number) => {
@@ -185,20 +191,34 @@ export function SettingsPanel({
         {/* Header */}
         <div className="sp-header">
           <span className="sp-header__title">Settings</span>
-          <button
-            className="sp-header__close"
-            onClick={onClose}
-            aria-label="Close settings"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-            </svg>
-          </button>
+          <div className="sp-header__right">
+            <label className="sp-advanced-toggle" title="Advanced mode">
+              <input
+                type="checkbox"
+                checked={settings.advancedMode}
+                onChange={e => set({ advancedMode: e.target.checked })}
+                aria-label="Advanced mode"
+              />
+              <span className="sp-advanced-toggle__track" aria-hidden="true" />
+              <span className="sp-advanced-toggle__label">Advanced</span>
+            </label>
+            <button
+              className="sp-header__close"
+              onClick={onClose}
+              aria-label="Close settings"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Tab bar */}
+        {/* Tab bar — Calendars and Timer only shown in advanced mode */}
         <nav className="sp-tabs" aria-label="Settings sections">
-          {TABS.map(tab => (
+          {TABS.filter(tab =>
+            settings.advancedMode || (tab.id !== 'calendars' && tab.id !== 'timer')
+          ).map(tab => (
             <button
               key={tab.id}
               role="tab"
@@ -287,15 +307,6 @@ export function SettingsPanel({
                 />
               </Row>
 
-              <Divider />
-
-              <Row label="More features" hint="Unlock calendar feeds, recurring tasks, backlog, and Pomodoro timer">
-                <Toggle
-                  checked={settings.advancedMode}
-                  onChange={v => set({ advancedMode: v })}
-                  label="More features"
-                />
-              </Row>
             </div>
           )}
 
@@ -372,6 +383,33 @@ export function SettingsPanel({
                   label="Auto-advance"
                 />
               </Row>
+
+              {settings.advancedMode && (
+                <>
+                  <Divider />
+                  <Row label="Recurring tasks">
+                    <Toggle
+                      checked={settings.enableRecurringTasks}
+                      onChange={v => set({ enableRecurringTasks: v })}
+                      label="Recurring tasks"
+                    />
+                  </Row>
+                  <Row label="Backlog">
+                    <Toggle
+                      checked={settings.enableBacklog}
+                      onChange={v => set({ enableBacklog: v })}
+                      label="Backlog"
+                    />
+                  </Row>
+                  <Row label="Day time summary">
+                    <Toggle
+                      checked={settings.showDaySummary}
+                      onChange={v => set({ showDaySummary: v })}
+                      label="Day time summary"
+                    />
+                  </Row>
+                </>
+              )}
             </div>
           )}
 
@@ -464,9 +502,10 @@ export function SettingsPanel({
                         aria-label="Remove calendar feed"
                         onClick={() => setConfirmRemoveIndex(i)}
                       >
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                          <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        <svg width="12" height="13" viewBox="0 0 12 13" fill="none" aria-hidden="true">
+                          <path d="M1 3h10M4 3V2h4v1M5 6v4M7 6v4M2 3l.7 8h6.6L10 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
+                        Remove
                       </button>
                     )}
                   </div>
