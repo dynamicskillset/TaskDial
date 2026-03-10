@@ -155,11 +155,11 @@ cd chronotasker-app && npm test
 - **Admin dashboard**: the owner account gets an admin panel at `/admin` to manage users, generate and revoke invite codes, and view an audit log.
 - **Security**: passwords are hashed with bcrypt, tokens are stored in httpOnly cookies (not localStorage), and all API routes check that data belongs to the requesting user.
 
-### v1.0.5 — 2026-03-10
+### v1.1.1 — 2026-03-10
 
-- **Privacy policy**: a full privacy policy is now accessible at `/privacy`, linked from the login page and the FAQ.
+- **Privacy policy**: a full privacy policy is now accessible at `/privacy`, linked from the login page and the help FAQ.
 - **Login inputs**: the email and password boxes now have a visible border so they are easier to spot on the dark background.
-- **Platform clarity**: the README now correctly explains that desktop install (Mac and Linux) requires Chrome or Edge.
+- **Platform clarity**: the getting-started guide now correctly explains that desktop install on Mac and Linux requires Chrome or Edge.
 
 ### v1.0.4 — 2026-03-09
 

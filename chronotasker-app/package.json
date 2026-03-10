@@ -1,7 +1,7 @@
 {
   "name": "chronotasker-app",
   "private": true,
-  "version": "1.0.5",
+  "version": "1.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
