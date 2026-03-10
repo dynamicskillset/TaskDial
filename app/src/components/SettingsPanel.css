@@ -94,6 +94,7 @@
   color: var(--color-text-secondary);
   border: none;
   border-bottom: 2px solid transparent;
+  border-radius: 0;
   margin-bottom: -1px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
