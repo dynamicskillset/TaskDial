@@ -10,7 +10,8 @@ const router = Router();
 const exportLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
-  keyGenerator: (req) => (req as any).user?.id || req.ip,
+  keyGenerator: (req) => (req as any).user?.id ?? 'unknown',
+  validate: false,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many export requests, please try again later' },
@@ -19,7 +20,8 @@ const exportLimiter = rateLimit({
 const importLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
-  keyGenerator: (req) => (req as any).user?.id || req.ip,
+  keyGenerator: (req) => (req as any).user?.id ?? 'unknown',
+  validate: false,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many import requests, please try again later' },
