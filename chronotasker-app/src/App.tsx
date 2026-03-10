@@ -26,6 +26,7 @@ import { useTaskNotifications } from './hooks/useTaskNotifications';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
 import { isAdmin } from './services/auth';
 import type { AuthUser } from './services/auth';
+import { exportData, importData, deleteAccount } from './services/api';
 import './App.css';
 
 interface AppProps {
@@ -60,6 +61,16 @@ function App({ user, onLogout }: AppProps) {
   const [showBacklog, setShowBacklog] = useState(false);
   const [recurringDeleteTask, setRecurringDeleteTask] = useState<Task | null>(null);
   const [demoMode, setDemoMode] = useState(false);
+
+  // Data & account section
+  const [dataActionStatus, setDataActionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [importWorking, setImportWorking] = useState(false);
+  const [exportWorking, setExportWorking] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
+  const [deleteWorking, setDeleteWorking] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const stashedState = useRef<{
     tasks: Task[];
     settings: AppSettings;
@@ -791,6 +802,51 @@ function App({ user, onLogout }: AppProps) {
     else enterDemoMode();
   }, [demoMode, enterDemoMode, exitDemoMode]);
 
+  async function handleExport() {
+    setExportWorking(true);
+    setDataActionStatus(null);
+    try {
+      await exportData();
+      setDataActionStatus({ type: 'success', message: 'Export downloaded.' });
+    } catch (err: unknown) {
+      setDataActionStatus({ type: 'error', message: err instanceof Error ? err.message : 'Export failed' });
+    } finally {
+      setExportWorking(false);
+    }
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setImportWorking(true);
+    setDataActionStatus(null);
+    try {
+      const result = await importData(file);
+      setDataActionStatus({
+        type: 'success',
+        message: `Imported ${result.imported.tasks} tasks and ${result.imported.sessions} Pomodoro sessions. Reload to see your data.`,
+      });
+    } catch (err: unknown) {
+      setDataActionStatus({ type: 'error', message: err instanceof Error ? err.message : 'Import failed' });
+    } finally {
+      setImportWorking(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!deleteConfirmed || !deletePassword) return;
+    setDeleteWorking(true);
+    setDeleteError('');
+    try {
+      await deleteAccount(deletePassword);
+      onLogout();
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : 'Deletion failed');
+      setDeleteWorking(false);
+    }
+  }
+
   const pomodoroState: PomodoroState = pomodoro.state;
 
   return (
@@ -1062,7 +1118,102 @@ function App({ user, onLogout }: AppProps) {
               </div>
             )}
           </div>
+
+          {/* Data & account section */}
+          <div className="settings-divider" />
+          <p className="settings-section-label">Data &amp; account</p>
+
+          {dataActionStatus && (
+            <p className={`data-action-status data-action-status--${dataActionStatus.type}`} role="alert">
+              {dataActionStatus.message}
+            </p>
+          )}
+
+          <div className="settings-row settings-row--stacked">
+            <span className="settings-row__label">Export your data</span>
+            <span className="settings-row__hint">Download all your tasks, sessions, and settings as a JSON file.</span>
+            <button
+              className="data-action-btn"
+              onClick={handleExport}
+              disabled={exportWorking}
+            >
+              {exportWorking ? 'Exporting…' : 'Download export'}
+            </button>
+          </div>
+
+          <div className="settings-row settings-row--stacked">
+            <span className="settings-row__label">Import data</span>
+            <span className="settings-row__hint">Restore from a previously exported JSON file. This replaces all current data.</span>
+            <label className={`data-action-btn${importWorking ? ' data-action-btn--disabled' : ''}`}>
+              {importWorking ? 'Importing…' : 'Choose file…'}
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImport}
+                disabled={importWorking}
+                style={{ position: 'absolute', width: 1, height: 1, opacity: 0, overflow: 'hidden' }}
+                aria-label="Choose JSON export file to import"
+              />
+            </label>
+          </div>
+
+          <div className="settings-row settings-row--stacked">
+            <span className="settings-row__label settings-row__label--danger">Delete account</span>
+            <span className="settings-row__hint">Permanently removes your account and all associated data. This cannot be undone.</span>
+            <button
+              className="data-action-btn data-action-btn--danger"
+              onClick={() => { setShowDeleteModal(true); setDeleteError(''); setDeletePassword(''); setDeleteConfirmed(false); }}
+            >
+              Delete my account…
+            </button>
+          </div>
+
         </div>
+        </div>
+      )}
+
+      {/* Delete account modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 id="delete-modal-title" className="modal-box__title">Delete account</h2>
+            <p className="modal-box__body">
+              This will permanently delete your account, all tasks, sessions, and settings. There is no way to recover this data.
+            </p>
+            <label className="modal-box__checkbox-label">
+              <input
+                type="checkbox"
+                checked={deleteConfirmed}
+                onChange={e => setDeleteConfirmed(e.target.checked)}
+              />
+              I understand this cannot be undone
+            </label>
+            <div className="modal-box__field">
+              <label htmlFor="delete-password" className="modal-box__field-label">Enter your password to confirm</label>
+              <input
+                id="delete-password"
+                type="password"
+                className="modal-box__input"
+                value={deletePassword}
+                onChange={e => setDeletePassword(e.target.value)}
+                autoComplete="current-password"
+                disabled={deleteWorking}
+              />
+            </div>
+            {deleteError && <p className="modal-box__error" role="alert">{deleteError}</p>}
+            <div className="modal-box__actions">
+              <button className="modal-box__cancel" onClick={() => setShowDeleteModal(false)} disabled={deleteWorking}>
+                Cancel
+              </button>
+              <button
+                className="modal-box__confirm modal-box__confirm--danger"
+                onClick={handleDeleteAccount}
+                disabled={!deleteConfirmed || !deletePassword || deleteWorking}
+              >
+                {deleteWorking ? 'Deleting…' : 'Delete everything'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

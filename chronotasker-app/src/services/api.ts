@@ -359,6 +359,57 @@ export async function fetchAdminStats(): Promise<AdminStats> {
   return adminRequest('/stats');
 }
 
+// ── User data (export / import / delete account) ──────────────────────────────
+
+export async function exportData(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/user/export`, { credentials: 'include' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error || 'Export failed');
+  }
+  const blob = await res.blob();
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `taskdial-export-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export interface ImportResult {
+  imported: { tasks: number; sessions: number };
+}
+
+export async function importData(file: File): Promise<ImportResult> {
+  const text = await file.text();
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch {
+    throw new Error('The file is not valid JSON');
+  }
+  const res = await fetch(`${API_URL}/api/user/import`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(parsed),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as any).error || 'Import failed');
+  return body as ImportResult;
+}
+
+export async function deleteAccount(password: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/user/account`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  if (res.status === 204) return;
+  const body = await res.json().catch(() => ({}));
+  throw new Error((body as any).error || 'Account deletion failed');
+}
+
 // ── Health ────────────────────────────────────────────────────────────────────
 
 export async function healthCheck(): Promise<boolean> {

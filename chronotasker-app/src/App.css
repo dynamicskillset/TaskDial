@@ -204,6 +204,189 @@
   gap: 0.4rem;
 }
 
+.settings-row__label--danger {
+  color: var(--color-danger);
+}
+
+/* ── Data & account actions ─────────────────────────────────────────────────── */
+
+.data-action-btn {
+  position: relative;
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.data-action-btn:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-text-secondary);
+}
+
+.data-action-btn:disabled,
+.data-action-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.data-action-btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.data-action-btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-alt));
+}
+
+.data-action-status {
+  font-size: 0.78rem;
+  margin: 0.25rem 1.25rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+}
+
+.data-action-status--success {
+  background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface));
+  color: var(--color-success);
+}
+
+.data-action-status--error {
+  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
+  color: var(--color-danger);
+}
+
+/* ── Delete account modal ───────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-box__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-box__body {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modal-box__checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.modal-box__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.modal-box__field-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.modal-box__input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+.modal-box__input:focus {
+  outline: none;
+  border-color: var(--color-text-secondary);
+}
+
+.modal-box__error {
+  font-size: 0.78rem;
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.modal-box__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.modal-box__cancel {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-box__cancel:hover:not(:disabled) {
+  border-color: var(--color-text-secondary);
+}
+
+.modal-box__confirm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.modal-box__confirm--danger {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+
+.modal-box__confirm--danger:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.modal-box__confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .settings-section-label {
   font-size: 0.7rem;
   font-weight: 700;
