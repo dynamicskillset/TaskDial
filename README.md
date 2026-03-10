@@ -1,5 +1,7 @@
 # ChronoTasker
 
+![ChronoTasker screenshot](chronotasker-screenshot.png)
+
 A visual time-planning tool with an integrated Pomodoro timer. Instead of a list, your day appears as a clock face — tasks are coloured arcs so you can see at a glance how your time is allocated.
 
 **Live at [chronotasker.dougbelshaw.com](https://chronotasker.dougbelshaw.com)** — invite-only during the testing period.
