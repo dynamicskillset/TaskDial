@@ -409,41 +409,41 @@ router.post('/forgot-password', resetLimiter, async (req: Request, res: Response
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#1e2030;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1e2030;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
           <tr>
-            <td style="padding-bottom:24px;text-align:center;">
-              <span style="font-size:24px;font-weight:700;color:#e2e4f0;letter-spacing:-0.03em;">TaskDial</span>
+            <td style="padding-bottom:20px;text-align:center;">
+              <span style="font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.03em;">TaskDial</span>
             </td>
           </tr>
           <tr>
-            <td style="background:#272a3d;border:1px solid #353850;border-radius:12px;padding:32px;">
-              <p style="margin:0 0 8px;font-size:18px;font-weight:600;color:#e2e4f0;">Reset your password</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#9095b0;line-height:1.5;">
+            <td style="background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:32px;">
+              <p style="margin:0 0 8px;font-size:18px;font-weight:600;color:#111827;">Reset your password</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#4b5563;line-height:1.6;">
                 We received a request to reset the password for your TaskDial account
-                (<span style="color:#c0c4d8;">${user.email}</span>).
+                (<strong style="color:#111827;">${user.email}</strong>).
                 This link expires in 1 hour.
               </p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${resetUrl}" style="display:inline-block;padding:12px 28px;background:#6272a4;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;">
+                    <a href="${resetUrl}" style="display:inline-block;padding:12px 28px;background:#3b5998;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;">
                       Reset password
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="margin:24px 0 0;font-size:12px;color:#6b7090;line-height:1.5;">
+              <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;">
                 If you did not request this, you can safely ignore this email.
                 Your password will not change unless you follow the link above.
               </p>
-              <hr style="border:none;border-top:1px solid #353850;margin:24px 0 0;">
-              <p style="margin:16px 0 0;font-size:11px;color:#4a4f6a;">
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0 0;">
+              <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
                 Or copy this link into your browser:<br>
-                <span style="color:#6272a4;word-break:break-all;">${resetUrl}</span>
+                <span style="color:#3b5998;word-break:break-all;">${resetUrl}</span>
               </p>
             </td>
           </tr>
