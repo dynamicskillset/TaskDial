@@ -250,6 +250,7 @@
         <path d="M 46.9 15.1 A 35 35 0 0 1 84.9 46.9" fill="none" stroke="#5E81AC" stroke-width="9" stroke-linecap="butt"/>
         <path d="M 84.9 53.1 A 35 35 0 0 1 53.1 84.9" fill="none" stroke="#88C0D0" stroke-width="9" stroke-linecap="butt"/>
         <path d="M 46.9 84.9 A 35 35 0 0 1 15 50"    fill="none" stroke="#A3BE8C" stroke-width="9" stroke-linecap="butt"/>
+        <path d="M 32 50 L 44 63 L 68 37" fill="none" stroke="#ECEFF4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       TaskDial
     </a>
@@ -268,7 +269,7 @@
         </svg>
         Invite-only · open source
       </div>
-      <h1 class="hero-title">Your day as a<br><span>clock</span>, not a list</h1>
+      <h1 class="hero-title">Your day as a<br><span>clock,</span> not a list</h1>
       <p class="hero-desc">TaskDial maps your tasks onto a 12-hour clock face so you can see exactly where your time is going, work in focused blocks, and actually finish what you planned.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary"   href="https://taskdial.dynamicskillset.com" target="_blank" rel="noopener">Open app</a>
@@ -276,50 +277,13 @@
       </div>
 
       <div class="hero-clock" aria-hidden="true">
-        <svg class="clock-preview" viewBox="0 0 220 220" width="220" height="220">
-          <!-- Outer ring -->
-          <circle cx="110" cy="110" r="100" fill="#3B4252" stroke="#4C566A" stroke-width="1"/>
-
-          <!-- Hour markers -->
-          <g stroke="#4C566A" stroke-width="1.5" stroke-linecap="round">
-            <line x1="110" y1="16"  x2="110" y2="26"/>
-            <line x1="160" y1="27"  x2="155" y2="36"/>
-            <line x1="193" y1="60"  x2="184" y2="65"/>
-            <line x1="204" y1="110" x2="194" y2="110"/>
-            <line x1="193" y1="160" x2="184" y2="155"/>
-            <line x1="160" y1="193" x2="155" y2="184"/>
-            <line x1="110" y1="204" x2="110" y2="194"/>
-            <line x1="60"  y1="193" x2="65"  y2="184"/>
-            <line x1="27"  y1="160" x2="36"  y2="155"/>
-            <line x1="16"  y1="110" x2="26"  y2="110"/>
-            <line x1="27"  y1="60"  x2="36"  y2="65"/>
-            <line x1="60"  y1="27"  x2="65"  y2="36"/>
-          </g>
-
-          <!-- Arc track -->
-          <circle cx="110" cy="110" r="72" fill="none" stroke="#4C566A" stroke-width="14" opacity="0.35"/>
-
-          <!-- Task arc 1: blue — 7am–9am (210°–270°) -->
-          <path d="M 74 146 A 72 72 0 0 1 110 38" fill="none" stroke="#5E81AC" stroke-width="14" stroke-linecap="butt" opacity="0.9"/>
-
-          <!-- Task arc 2: frost — 9am–10:30am (270°–315°) -->
-          <path d="M 110 38 A 72 72 0 0 1 161 59" fill="none" stroke="#88C0D0" stroke-width="14" stroke-linecap="butt" opacity="0.9"/>
-
-          <!-- Task arc 3: green — 11am–12pm (345°–30°) -->
-          <path d="M 182 110 A 72 72 0 0 1 146 74" fill="none" stroke="#A3BE8C" stroke-width="14" stroke-linecap="butt" opacity="0.9"/>
-
-          <!-- Task arc 4: orange — 1pm–2:30pm (30°–75°) -->
-          <path d="M 146 146 A 72 72 0 0 1 182 110" fill="none" stroke="#D08770" stroke-width="14" stroke-linecap="butt" opacity="0.9"/>
-
-          <!-- Clock hands -->
-          <!-- Hour hand (pointing ~10 o'clock) -->
-          <line x1="110" y1="110" x2="72" y2="68" stroke="#ECEFF4" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
-          <!-- Minute hand (pointing ~2 o'clock) -->
-          <line x1="110" y1="110" x2="148" y2="56" stroke="#ECEFF4" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          <!-- Second hand -->
-          <line x1="110" y1="110" x2="130" y2="168" stroke="#D08770" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
-          <!-- Centre dot -->
-          <circle cx="110" cy="110" r="4" fill="#ECEFF4"/>
+        <svg class="clock-preview" viewBox="0 0 100 100" width="200" height="200">
+          <circle cx="50" cy="50" r="47" fill="none" stroke="#4C566A" stroke-width="1.5" opacity="0.2"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#4C566A" stroke-width="9" opacity="0.18"/>
+          <path d="M 46.9 15.1 A 35 35 0 0 1 84.9 46.9" fill="none" stroke="#5E81AC" stroke-width="9" stroke-linecap="butt"/>
+          <path d="M 84.9 53.1 A 35 35 0 0 1 53.1 84.9" fill="none" stroke="#88C0D0" stroke-width="9" stroke-linecap="butt"/>
+          <path d="M 46.9 84.9 A 35 35 0 0 1 15 50"    fill="none" stroke="#A3BE8C" stroke-width="9" stroke-linecap="butt"/>
+          <path d="M 32 50 L 44 63 L 68 37" fill="none" stroke="#ECEFF4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
     </section>
@@ -363,7 +327,7 @@
     <section id="selfhost">
       <div class="selfhost-card">
         <div>
-          <p><strong>Want to self-host?</strong> TaskDial is open source under the MIT licence. The backend is a lightweight Node.js server; the frontend is a static PWA. Full instructions are in the repository.</p>
+          <p><strong>Want to self-host?</strong> TaskDial is open source under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0 licence</a>. The backend is a lightweight Node.js server; the frontend is a static PWA. Full instructions are in the repository.</p>
         </div>
         <a class="btn btn-secondary" href="https://github.com/dynamicskillset/TaskDial" target="_blank" rel="noopener" style="flex-shrink:0;">View on GitHub</a>
       </div>
@@ -374,7 +338,7 @@
   <footer>
     TaskDial v1.3.1
     &middot;
-    <a href="https://github.com/dynamicskillset/TaskDial/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>
+    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a>
     &middot;
     <a href="https://github.com/dynamicskillset/TaskDial" target="_blank" rel="noopener">GitHub</a>
     &middot;
