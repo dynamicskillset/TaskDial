@@ -123,17 +123,22 @@
     .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
     .hero-ctas .btn { font-size: 15px; padding: 10px 22px; }
 
-    /* ── Clock preview ── */
-    .hero-clock {
-      margin-top: 52px;
+    /* ── Hero layout ── */
+    .hero-inner {
       display: flex;
-      justify-content: center;
+      gap: 40px;
+      align-items: flex-start;
     }
 
-    .clock-preview {
-      position: relative;
-      width: 220px;
-      height: 220px;
+    .hero-icon {
+      flex-shrink: 0;
+    }
+
+    .hero-text { flex: 1; }
+
+    @media (max-width: 520px) {
+      .hero-inner { flex-direction: column; gap: 24px; }
+      .hero-icon svg { width: 120px; height: 120px; }
     }
 
     /* ── Callouts ── */
@@ -263,28 +268,31 @@
   <main>
 
     <section id="hero">
-      <div class="hero-eyebrow">
-        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-          <circle cx="5" cy="5" r="4" fill="currentColor"/>
-        </svg>
-        Invite-only · open source
-      </div>
-      <h1 class="hero-title">Your day as a<br><span>clock,</span> not a list</h1>
-      <p class="hero-desc">TaskDial maps your tasks onto a 12-hour clock face so you can see exactly where your time is going, work in focused blocks, and actually finish what you planned.</p>
-      <div class="hero-ctas">
-        <a class="btn btn-primary"   href="https://taskdial.dynamicskillset.com" target="_blank" rel="noopener">Open app</a>
-        <a class="btn btn-secondary" href="https://github.com/dynamicskillset/TaskDial" target="_blank" rel="noopener">View on GitHub</a>
-      </div>
-
-      <div class="hero-clock" aria-hidden="true">
-        <svg class="clock-preview" viewBox="0 0 100 100" width="200" height="200">
-          <circle cx="50" cy="50" r="47" fill="none" stroke="#4C566A" stroke-width="1.5" opacity="0.2"/>
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#4C566A" stroke-width="9" opacity="0.18"/>
-          <path d="M 46.9 15.1 A 35 35 0 0 1 84.9 46.9" fill="none" stroke="#5E81AC" stroke-width="9" stroke-linecap="butt"/>
-          <path d="M 84.9 53.1 A 35 35 0 0 1 53.1 84.9" fill="none" stroke="#88C0D0" stroke-width="9" stroke-linecap="butt"/>
-          <path d="M 46.9 84.9 A 35 35 0 0 1 15 50"    fill="none" stroke="#A3BE8C" stroke-width="9" stroke-linecap="butt"/>
-          <path d="M 32 50 L 44 63 L 68 37" fill="none" stroke="#ECEFF4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="hero-inner">
+        <div class="hero-icon" aria-hidden="true">
+          <svg viewBox="0 0 100 100" width="160" height="160">
+            <circle cx="50" cy="50" r="47" fill="none" stroke="#4C566A" stroke-width="1.5" opacity="0.2"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="#4C566A" stroke-width="9" opacity="0.18"/>
+            <path d="M 46.9 15.1 A 35 35 0 0 1 84.9 46.9" fill="none" stroke="#5E81AC" stroke-width="9" stroke-linecap="butt"/>
+            <path d="M 84.9 53.1 A 35 35 0 0 1 53.1 84.9" fill="none" stroke="#88C0D0" stroke-width="9" stroke-linecap="butt"/>
+            <path d="M 46.9 84.9 A 35 35 0 0 1 15 50"    fill="none" stroke="#A3BE8C" stroke-width="9" stroke-linecap="butt"/>
+            <path d="M 32 50 L 44 63 L 68 37" fill="none" stroke="#ECEFF4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="hero-text">
+          <div class="hero-eyebrow">
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <circle cx="5" cy="5" r="4" fill="currentColor"/>
+            </svg>
+            Invite-only · open source
+          </div>
+          <h1 class="hero-title">Your day as a<br><span>clock,</span> not a list</h1>
+          <p class="hero-desc">TaskDial maps your tasks onto a 12-hour clock face so you can see exactly where your time is going, work in focused blocks, and actually finish what you planned.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary"   href="https://taskdial.dynamicskillset.com" target="_blank" rel="noopener">Open app</a>
+            <a class="btn btn-secondary" href="https://github.com/dynamicskillset/TaskDial" target="_blank" rel="noopener">View on GitHub</a>
+          </div>
+        </div>
       </div>
     </section>
 
