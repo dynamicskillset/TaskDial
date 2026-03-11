@@ -1873,6 +1873,15 @@
 
 .auth-field__forgot {
   font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+.auth-field__forgot:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+  opacity: 1;
 }
 
 .auth-field__hint {
