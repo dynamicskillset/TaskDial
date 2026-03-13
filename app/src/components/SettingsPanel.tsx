@@ -43,6 +43,7 @@ export interface SettingsPanelProps {
   onOpenDeleteModal: () => void;
   onLogout: () => void;
   userEmail: string;
+  onReplayOnboarding: () => void;
 }
 
 /* ---- Primitive controls ---- */
@@ -148,6 +149,7 @@ export function SettingsPanel({
   onOpenDeleteModal,
   onLogout,
   userEmail,
+  onReplayOnboarding,
 }: SettingsPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('look');
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
@@ -304,6 +306,13 @@ export function SettingsPanel({
                   checked={!!settings.enableSounds}
                   onChange={v => set({ enableSounds: v })}
                   label="Sound effects"
+                />
+              </Row>
+              <Row label="Flash when time's up" hint="Clock arc flashes and a prompt appears when a task runs over">
+                <Toggle
+                  checked={!!settings.flashWhenTimeUp}
+                  onChange={v => set({ flashWhenTimeUp: v })}
+                  label="Flash when time's up"
                 />
               </Row>
 
@@ -663,6 +672,16 @@ export function SettingsPanel({
                 </div>
                 <button className="sp-action-btn sp-action-btn--signout" onClick={onLogout}>
                   Sign out
+                </button>
+              </div>
+
+              <div className="sp-account-action">
+                <div className="sp-account-action__text">
+                  <span className="sp-account-action__label">Onboarding tour</span>
+                  <span className="sp-account-action__desc">Replay the welcome walkthrough.</span>
+                </div>
+                <button className="sp-action-btn" onClick={onReplayOnboarding}>
+                  Replay
                 </button>
               </div>
 

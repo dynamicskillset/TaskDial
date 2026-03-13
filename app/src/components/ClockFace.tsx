@@ -21,6 +21,7 @@ interface ClockFaceProps {
   activeTaskId: string | null;
   activeCalendarUid: string | null;
   pomodoroState: PomodoroState | null;
+  timedOutTaskId?: string | null;
   onTaskClick: (taskId: string) => void;
   onCalendarEventClick?: (uid: string) => void;
   onSlotsResolved?: (colorMap: Map<string, string>) => void;
@@ -361,11 +362,13 @@ const TaskArc = React.memo(function TaskArc({
   slot,
   totalTasks,
   isActive,
+  isTimedOut,
   onTaskClick,
 }: {
   slot: ResolvedSlot;
   totalTasks: number;
   isActive: boolean;
+  isTimedOut: boolean;
   onTaskClick: (id: string) => void;
 }) {
   const { task, startHour, startMinute, endHour, endMinute, index } = slot;
@@ -399,6 +402,7 @@ const TaskArc = React.memo(function TaskArc({
     task.important && 'clock-face__task-arc--important',
     isActive && 'clock-face__task-arc--active',
     hasConflict && 'clock-face__task-arc--conflict',
+    isTimedOut && 'clock-face__task-arc--timed-out',
   ]
     .filter(Boolean)
     .join(' ');
@@ -632,6 +636,7 @@ const ClockFace: React.FC<ClockFaceProps> = ({
   activeTaskId,
   activeCalendarUid,
   pomodoroState,
+  timedOutTaskId = null,
   onTaskClick,
   onCalendarEventClick,
   onSlotsResolved,
@@ -729,6 +734,7 @@ const ClockFace: React.FC<ClockFaceProps> = ({
               slot.task.id === activeTaskId ||
               slot.task.id === activePomodoroTaskId
             }
+            isTimedOut={slot.task.id === timedOutTaskId}
             onTaskClick={onTaskClick}
           />
         ))}

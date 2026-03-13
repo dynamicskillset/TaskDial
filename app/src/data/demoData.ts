@@ -666,6 +666,7 @@ export function getDemoSettings(): AppSettings {
     clockPosition: 'left',
     advancedMode: true,
     enableSounds: false,
+    flashWhenTimeUp: true,
     icalUrls: [],
     workingDays: [1, 2, 3, 4, 5],
   };

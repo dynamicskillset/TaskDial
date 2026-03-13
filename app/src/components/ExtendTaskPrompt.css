@@ -1,0 +1,100 @@
+/* ExtendTaskPrompt — toast shown when a task's scheduled time has elapsed */
+
+.extend-prompt {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14), 0 1px 6px rgba(0, 0, 0, 0.08);
+
+  max-width: calc(100vw - 2rem);
+  width: max-content;
+
+  animation: extend-prompt-in 0.25s ease-out;
+}
+
+@keyframes extend-prompt-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.extend-prompt__icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.extend-prompt__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.extend-prompt__title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 0.1rem;
+}
+
+.extend-prompt__task {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20ch;
+}
+
+.extend-prompt__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.extend-prompt__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.extend-prompt__btn:hover { opacity: 0.8; }
+
+.extend-prompt__btn--extend {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.extend-prompt__btn--done {
+  background: var(--color-success, hsl(120, 40%, 50%));
+  color: #fff;
+}
+
+.extend-prompt__btn--dismiss {
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+}

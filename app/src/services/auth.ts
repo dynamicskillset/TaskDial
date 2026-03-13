@@ -5,6 +5,7 @@ export interface AuthUser {
   id: string;
   email: string;
   role: string;
+  onboardingComplete?: boolean;
 }
 
 export function getUser(): AuthUser | null {

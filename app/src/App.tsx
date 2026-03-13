@@ -24,10 +24,13 @@ import { useUnfinishedTasks } from './hooks/useUnfinishedTasks';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useTaskNotifications } from './hooks/useTaskNotifications';
+import { useTimedOutTask } from './hooks/useTimedOutTask';
+import ExtendTaskPrompt from './components/ExtendTaskPrompt';
+import OnboardingWalkthrough from './components/OnboardingWalkthrough';
 import { getDemoTasks, getDemoBacklogTasks, getDemoCalendarEvents, getDemoSettings } from './data/demoData';
-import { isAdmin } from './services/auth';
+import { isAdmin, setUser as persistUser } from './services/auth';
 import type { AuthUser } from './services/auth';
-import { exportData, importData, deleteAccount } from './services/api';
+import { exportData, importData, deleteAccount, completeOnboarding, resetOnboarding } from './services/api';
 import { SettingsPanel } from './components/SettingsPanel';
 import './App.css';
 
@@ -77,6 +80,17 @@ function App({ user, onLogout }: AppProps) {
   const [showBacklog, setShowBacklog] = useState(false);
   const [recurringDeleteTask, setRecurringDeleteTask] = useState<Task | null>(null);
   const [demoMode, setDemoMode] = useState(false);
+
+  // Onboarding walkthrough — shown once to new users; can be replayed from Settings
+  const [showOnboarding, setShowOnboarding] = useState(!user.onboardingComplete);
+  // When AuthGate refreshes the user via getMe(), hide onboarding if already complete
+  useEffect(() => {
+    if (user.onboardingComplete) setShowOnboarding(false);
+  }, [user.onboardingComplete]);
+
+  // Timed-out task tracking — dismissed IDs reset when the task is resolved
+  const [dismissedTimedOutIds, setDismissedTimedOutIds] = useState<Set<string>>(new Set());
+  const notifiedTimedOutIds = useRef<Set<string>>(new Set());
 
   // What's new banner — show once per DEFAULT (minor) version bump, never for SHAME (patch) bumps
   const CHANGELOG_URL = 'https://github.com/dynamicskillset/TaskDial?tab=readme-ov-file#changelog';
@@ -496,6 +510,33 @@ function App({ user, onLogout }: AppProps) {
   // Task start notifications
   useTaskNotifications(scheduledTasks, currentTime, isToday, !demoMode);
 
+  // Timed-out task: first non-completed task whose scheduled end has passed
+  const rawTimedOutId = useTimedOutTask(scheduledTasks, currentTime, isToday, !!settings.flashWhenTimeUp && !demoMode);
+  const timedOutTaskId = rawTimedOutId && !dismissedTimedOutIds.has(rawTimedOutId) ? rawTimedOutId : null;
+
+  // Fire a browser notification the first time each task times out
+  useEffect(() => {
+    if (!timedOutTaskId || notifiedTimedOutIds.current.has(timedOutTaskId)) return;
+    notifiedTimedOutIds.current.add(timedOutTaskId);
+    if (Notification.permission === 'granted') {
+      const task = tasks.find(t => t.id === timedOutTaskId);
+      if (task) new Notification("Time\u2019s up", { body: task.title, icon: '/icons/icon-192.png' });
+    }
+  }, [timedOutTaskId, tasks]);
+
+  const handleExtendTask = useCallback((taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const updated = { ...task, durationMinutes: task.durationMinutes + 15, updatedAt: new Date().toISOString() };
+    setTasks(prev => prev.map(t => t.id === taskId ? updated : t));
+    pushTask('update', updated);
+    setDismissedTimedOutIds(prev => new Set([...prev, taskId]));
+  }, [tasks, pushTask]);
+
+  const handleDismissTimedOut = useCallback((taskId: string) => {
+    setDismissedTimedOutIds(prev => new Set([...prev, taskId]));
+  }, []);
+
   // Task handlers
   const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'sortOrder'>) => {
     const now = new Date().toISOString();
@@ -553,6 +594,11 @@ function App({ user, onLogout }: AppProps) {
       redo: () => { setTasks(prev => prev.map(t => t.id === toggled.id ? toggled : t)); pushTask('update', toggled); },
     });
   }, [tasks, pushTask, pushUndo, settings.enableSounds]);
+
+  const handleMarkTimedOutDone = useCallback((taskId: string) => {
+    handleToggleComplete(taskId);
+    setDismissedTimedOutIds(prev => new Set([...prev, taskId]));
+  }, [handleToggleComplete]);
 
   const handleToggleImportant = useCallback((taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
@@ -942,6 +988,25 @@ function App({ user, onLogout }: AppProps) {
     else enterDemoMode();
   }, [demoMode, enterDemoMode, exitDemoMode]);
 
+  const handleCompleteOnboarding = useCallback(() => {
+    setShowOnboarding(false);
+    exitDemoMode();
+    persistUser({ ...user, onboardingComplete: true });
+    completeOnboarding().catch(() => {/* best effort */});
+  }, [exitDemoMode, user]);
+
+  const handleReplayOnboarding = useCallback(() => {
+    setShowSettings(false);
+    resetOnboarding().catch(() => {/* best effort */});
+    enterDemoMode();
+    setShowOnboarding(true);
+  }, [enterDemoMode]);
+
+  // Enter demo mode automatically when onboarding is active so the clock is populated
+  useEffect(() => {
+    if (showOnboarding) enterDemoMode();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleExport() {
     setExportWorking(true);
     setDataActionStatus(null);
@@ -1039,7 +1104,7 @@ function App({ user, onLogout }: AppProps) {
               Admin
             </a>
           )}
-          <button className="settings-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Settings" aria-expanded={showSettings} aria-controls="settings-panel" title="Settings">
+          <button className="settings-btn" data-onboarding="settings-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Settings" aria-expanded={showSettings} aria-controls="settings-panel" title="Settings">
             &#9881;
           </button>
         </div>
@@ -1105,7 +1170,12 @@ function App({ user, onLogout }: AppProps) {
           onOpenDeleteModal={() => { setShowDeleteModal(true); setDeleteError(''); setDeletePassword(''); setDeleteConfirmed(false); }}
           onLogout={onLogout}
           userEmail={user.email}
+          onReplayOnboarding={handleReplayOnboarding}
         />
+      )}
+
+      {showOnboarding && (
+        <OnboardingWalkthrough onComplete={handleCompleteOnboarding} appVersion={APP_VERSION} />
       )}
 
       {/* Delete account modal */}
@@ -1188,7 +1258,7 @@ function App({ user, onLogout }: AppProps) {
       </div>
 
       <main className={`app-main${settings.clockPosition === 'right' ? ' app-main--clock-right' : ''}`}>
-        <section className="clock-section">
+        <section className="clock-section" data-onboarding="clock">
           <ClockFace
             tasks={scheduledTasks}
             calendarEvents={settings.advancedMode ? calendarEvents : []}
@@ -1202,10 +1272,19 @@ function App({ user, onLogout }: AppProps) {
             activeTaskId={activeTaskId}
             activeCalendarUid={activeCalendarUid}
             pomodoroState={pomodoroState}
+            timedOutTaskId={timedOutTaskId}
             onTaskClick={setActiveTaskId}
             onCalendarEventClick={(uid) => setActiveCalendarUid(prev => prev === uid ? null : uid)}
             onSlotsResolved={setClockColorMap}
           />
+          {timedOutTaskId && (
+            <ExtendTaskPrompt
+              taskTitle={tasks.find(t => t.id === timedOutTaskId)?.title ?? ''}
+              onExtend={() => handleExtendTask(timedOutTaskId)}
+              onMarkDone={() => handleMarkTimedOutDone(timedOutTaskId)}
+              onDismiss={() => handleDismissTimedOut(timedOutTaskId)}
+            />
+          )}
           {clockPanelOrder.map(panelId => {
             if (panelId === 'calendar' && (!settings.advancedMode || calendarEvents.length === 0)) return null;
             if (panelId === 'summary' && !daySummary) return null;
@@ -1385,7 +1464,7 @@ function App({ user, onLogout }: AppProps) {
                         <span className="collapsible-section__title">{editingTask ? 'Edit task' : 'Add task or break'}</span>
                       </button>
                       {showForm && (
-                        <div className="collapsible-section__body">
+                        <div className="collapsible-section__body" data-onboarding="taskform">
                           <TaskForm
                             onSubmit={editingTask ? handleUpdateTask : handleAddTask}
                             editingTask={editingTask}
@@ -1421,7 +1500,7 @@ function App({ user, onLogout }: AppProps) {
                         )}
                       </button>
                       {showTaskList && (
-                        <div className="collapsible-section__body collapsible-section__body--flush">
+                        <div className="collapsible-section__body collapsible-section__body--flush" data-onboarding="tasklist">
                           {showReorgBanner && (
                             <div className="reorg-banner" role="status">
                               <span className="reorg-banner__text">Tasks overflow the day, but a different order would fit.</span>

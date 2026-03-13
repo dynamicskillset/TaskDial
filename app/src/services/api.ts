@@ -117,7 +117,12 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   if (data.key_salt) {
     await cryptoService.initKey(password, data.key_salt, data.user.id);
   }
-  return data.user as AuthUser;
+  return {
+    id: data.user.id,
+    email: data.user.email,
+    role: data.user.role,
+    onboardingComplete: data.user.onboarding_complete === 1,
+  };
 }
 
 export async function register(email: string, password: string, inviteCode: string): Promise<AuthUser> {
@@ -135,7 +140,12 @@ export async function register(email: string, password: string, inviteCode: stri
   if (data.key_salt) {
     await cryptoService.initKey(password, data.key_salt, data.user.id);
   }
-  return data.user as AuthUser;
+  return {
+    id: data.user.id,
+    email: data.user.email,
+    role: data.user.role,
+    onboardingComplete: data.user.onboarding_complete === 1,
+  };
 }
 
 export async function logout(): Promise<void> {
@@ -146,11 +156,29 @@ export async function logout(): Promise<void> {
 }
 
 export async function getMe(): Promise<AuthUser | null> {
-  const res = await fetch(`${API_URL}/api/auth/me`, {
+  const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return {
+    id: data.id,
+    email: data.email,
+    role: data.role,
+    onboardingComplete: data.onboarding_complete === 1,
+  };
+}
+
+export async function completeOnboarding(): Promise<void> {
+  await fetch(`${API_URL}/api/auth/complete-onboarding`, {
+    method: 'POST',
     credentials: 'include',
   });
-  if (!res.ok) return null;
-  return res.json();
+}
+
+export async function resetOnboarding(): Promise<void> {
+  await fetch(`${API_URL}/api/auth/complete-onboarding`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
 }
 
 export async function refreshToken(): Promise<boolean> {

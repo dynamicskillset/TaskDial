@@ -186,7 +186,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
   const refreshToken = issueRefreshToken(userId);
   setAuthCookies(res, accessToken, refreshToken);
 
-  res.status(201).json({ user: { id: userId, email: normalEmail, role: 'user' }, key_salt: keySalt });
+  res.status(201).json({ user: { id: userId, email: normalEmail, role: 'user', onboarding_complete: 0 }, key_salt: keySalt });
 });
 
 // POST /api/auth/login
@@ -207,10 +207,10 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
   const normalEmail = email.trim().toLowerCase();
 
   const user = db.prepare(
-    'SELECT id, email, password_hash, key_salt, role, is_active, token_version, deleted_at FROM users WHERE email = ?'
+    'SELECT id, email, password_hash, key_salt, role, is_active, token_version, deleted_at, onboarding_complete FROM users WHERE email = ?'
   ).get(normalEmail) as {
     id: string; email: string; password_hash: string; key_salt: string | null; role: string;
-    is_active: number; token_version: number; deleted_at: string | null;
+    is_active: number; token_version: number; deleted_at: string | null; onboarding_complete: number;
   } | undefined;
 
   // Always run bcrypt compare to avoid timing attacks (use dummy hash if user not found)
@@ -250,7 +250,7 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
   // Update last_seen_at
   db.prepare('UPDATE users SET updated_at = ? WHERE id = ?').run(new Date().toISOString(), user.id);
 
-  res.json({ user: { id: user.id, email: user.email, role: user.role }, key_salt: user.key_salt });
+  res.json({ user: { id: user.id, email: user.email, role: user.role, onboarding_complete: user.onboarding_complete }, key_salt: user.key_salt });
 });
 
 // POST /api/auth/logout
@@ -353,7 +353,31 @@ router.post('/refresh', refreshLimiter, (req: Request, res: Response) => {
 
 // GET /api/auth/me
 router.get('/me', jwtAuth, (req: Request, res: Response) => {
-  res.json({ id: req.user!.id, email: req.user!.email, role: req.user!.role });
+  const db = getDb();
+  const row = db.prepare('SELECT onboarding_complete FROM users WHERE id = ?').get(req.user!.id) as
+    { onboarding_complete: number } | undefined;
+  res.json({
+    id: req.user!.id,
+    email: req.user!.email,
+    role: req.user!.role,
+    onboarding_complete: row?.onboarding_complete ?? 0,
+  });
+});
+
+// POST /api/auth/complete-onboarding
+router.post('/complete-onboarding', jwtAuth, (req: Request, res: Response) => {
+  const db = getDb();
+  db.prepare('UPDATE users SET onboarding_complete = 1, updated_at = ? WHERE id = ?')
+    .run(new Date().toISOString(), req.user!.id);
+  res.json({ success: true });
+});
+
+// DELETE /api/auth/complete-onboarding — reset so user can replay walkthrough
+router.delete('/complete-onboarding', jwtAuth, (req: Request, res: Response) => {
+  const db = getDb();
+  db.prepare('UPDATE users SET onboarding_complete = 0, updated_at = ? WHERE id = ?')
+    .run(new Date().toISOString(), req.user!.id);
+  res.json({ success: true });
 });
 
 // POST /api/auth/forgot-password

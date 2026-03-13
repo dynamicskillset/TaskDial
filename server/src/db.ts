@@ -181,6 +181,7 @@ function initTables(): void {
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_user_date ON tasks(user_id, date)'); } catch { /* already exists */ }
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_user_updated ON tasks(user_id, updated_at)'); } catch { /* already exists */ }
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_pomodoro_user_date ON pomodoro_sessions(user_id, date)'); } catch { /* already exists */ }
+  try { db.exec('ALTER TABLE users ADD COLUMN onboarding_complete INTEGER NOT NULL DEFAULT 0'); } catch { /* already exists */ }
 }
 
 function seedOwner(): void {

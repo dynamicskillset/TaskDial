@@ -1,0 +1,145 @@
+/* OnboardingWalkthrough — hybrid overlay + coach marks */
+
+/* Backdrop */
+.onboarding__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Spotlight cut-out — white rectangle that punches through the backdrop */
+.onboarding__spotlight {
+  position: fixed;
+  z-index: 1001;
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.3),
+    0 0 0 3px var(--color-accent);
+  pointer-events: none;
+  transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+/* Step card */
+.onboarding__card {
+  position: fixed;
+  z-index: 1002;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-accent);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem 0.9rem;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  max-width: calc(100vw - 2rem);
+  animation: onboarding-card-in 0.2s ease-out;
+}
+
+/* In dark mode, flip the card to light so it stands out against the dim overlay */
+:root[data-theme="dark"] .onboarding__card {
+  background: #f0f0f4;
+  border-color: #c8c0d8;
+  color: #1a1a2e;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="dark"] .onboarding__title {
+  color: #1a1a2e;
+}
+
+:root[data-theme="dark"] .onboarding__body {
+  color: #3a3a4e;
+}
+
+:root[data-theme="dark"] .onboarding__skip {
+  color: #5a5a7a;
+}
+
+:root[data-theme="dark"] .onboarding__dot {
+  background: #c0b8d0;
+}
+
+:root[data-theme="dark"] .onboarding__dot--active {
+  background: var(--color-accent);
+}
+
+@keyframes onboarding-card-in {
+  from { opacity: 0; transform: scale(0.95) translateY(var(--ty, -50%)) translateX(var(--tx, 0)); }
+  to   { opacity: 1; }
+}
+
+/* Progress dots */
+.onboarding__progress {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 0.75rem;
+}
+
+.onboarding__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: background 0.2s;
+}
+
+.onboarding__dot--active {
+  background: var(--color-accent);
+}
+
+.onboarding__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.4rem;
+}
+
+.onboarding__body {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0 0 0.9rem;
+}
+
+.onboarding__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.onboarding__skip {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.onboarding__skip:hover { color: var(--color-text); }
+
+.onboarding__next {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.onboarding__next:hover { opacity: 0.85; }
+
+/* Responsive: stack card below spotlight on narrow screens */
+@media (max-width: 600px) {
+  .onboarding__card {
+    bottom: 1.5rem;
+    top: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
