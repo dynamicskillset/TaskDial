@@ -54,10 +54,11 @@ export default function AuthGate() {
       if (cached) {
         setStorageUser(cached.id);
         setUserState(cached);
+        // Restore encryption key before rendering app — on mobile, importKey
+        // can take 100–300 ms; rendering first causes encrypted blobs (Bug #26)
+        await loadKeyFromSession(cached.id);
         const adminRole = cached.role === 'admin' || cached.role === 'owner';
         setView(wantsAdmin() && adminRole ? 'admin' : 'app');
-        // Restore encryption key from sessionStorage (survives page refresh)
-        await loadKeyFromSession(cached.id);
       }
 
       const me = await getMe();

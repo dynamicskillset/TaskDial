@@ -48,24 +48,33 @@ function hashToken(raw: string): string {
 
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
   const isProd = process.env.NODE_ENV === 'production';
-  const cookieOpts = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'strict' as const,
-    path: '/',
-  };
-
   const accessExpires = parseInt(process.env.JWT_ACCESS_EXPIRES || '3600', 10);
   const refreshExpires = getRefreshExpires();
 
-  res.cookie('access_token', accessToken, { ...cookieOpts, maxAge: accessExpires * 1000 });
-  res.cookie('refresh_token', refreshToken, { ...cookieOpts, maxAge: refreshExpires * 1000 });
+  // Access token: strict is fine — short-lived (1 h) and only sent on same-site requests
+  res.cookie('access_token', accessToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'strict',
+    path: '/',
+    maxAge: accessExpires * 1000,
+  });
+
+  // Refresh token: lax so it survives PWA navigation contexts on iOS Safari (Bug #27).
+  // 'strict' blocked the cookie when the installed PWA briefly navigated away, logging the user out.
+  res.cookie('refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: refreshExpires * 1000,
+  });
 }
 
 function clearAuthCookies(res: Response): void {
-  const opts = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' as const, path: '/' };
-  res.clearCookie('access_token', opts);
-  res.clearCookie('refresh_token', opts);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('access_token', { httpOnly: true, secure: isProd, sameSite: 'strict', path: '/' });
+  res.clearCookie('refresh_token', { httpOnly: true, secure: isProd, sameSite: 'lax', path: '/' });
 }
 
 function issueRefreshToken(userId: string): string {

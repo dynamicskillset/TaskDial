@@ -560,13 +560,12 @@ export default function TaskList({
   }, []);
 
   const handleToggleReschedule = useCallback((taskId: string, triggerEl?: HTMLElement) => {
-    dismissActionsMenu();
     setReschedulingTaskId((current) => {
       if (current === taskId) return null;
       rescheduleTriggerRef.current = triggerEl ?? null;
       return taskId;
     });
-  }, [dismissActionsMenu]);
+  }, []);
 
   const handleToggleDetails = useCallback((taskId: string) => {
     setExpandedDetailsId((current) => (current === taskId ? null : taskId));

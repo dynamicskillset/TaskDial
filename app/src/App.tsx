@@ -13,6 +13,7 @@ import { scheduleTasks, findNonOverflowOrdering, type ScheduledTask } from './ut
 import { formatDuration, tagColor, tagBgColor, buildTagHueMap, tagColorFromHue, tagBgColorFromHue } from './utils/format';
 import { todayString, tomorrowString, getWeekMonday, weekDayDate, shiftDate } from './utils/scheduling';
 import { fetchCalendar, fetchTasks as apiFetchTasks, logInstallEvent, refreshToken } from './services/api';
+import { shouldShowWhatsNew } from './utils/whatsNew';
 import * as storage from './services/storage';
 import { parseIcalEvents } from './utils/ical';
 import { playTick } from './utils/audio';
@@ -77,15 +78,16 @@ function App({ user, onLogout }: AppProps) {
   const [recurringDeleteTask, setRecurringDeleteTask] = useState<Task | null>(null);
   const [demoMode, setDemoMode] = useState(false);
 
-  // What's new banner — show once per DEFAULT (minor) version bump
+  // What's new banner — show once per DEFAULT (minor) version bump, never for SHAME (patch) bumps
   const CHANGELOG_URL = 'https://github.com/dynamicskillset/TaskDial?tab=readme-ov-file#changelog';
   const WHATS_NEW_KEY = 'td_whats_new_seen';
-  const defaultVersion = APP_VERSION.split('.').slice(0, 2).join('.');
+  const parts = APP_VERSION.split('.');
+  const minorVersion = `${parts[0] ?? '0'}.${parts[1] ?? '0'}`;
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
-    try { return localStorage.getItem(WHATS_NEW_KEY) !== defaultVersion; } catch { return false; }
+    try { return shouldShowWhatsNew(localStorage.getItem(WHATS_NEW_KEY), APP_VERSION); } catch { return false; }
   });
   function dismissWhatsNew() {
-    try { localStorage.setItem(WHATS_NEW_KEY, defaultVersion); } catch { /* ignore */ }
+    try { localStorage.setItem(WHATS_NEW_KEY, minorVersion); } catch { /* ignore */ }
     setShowWhatsNew(false);
   }
 
@@ -169,11 +171,17 @@ function App({ user, onLogout }: AppProps) {
     return () => clearInterval(timer);
   }, []);
 
-  // Refresh auth token when the tab becomes visible again (handles tab-snoozed browsers)
+  // Refresh auth token when the tab becomes visible again (handles tab-snoozed browsers).
+  // Throttled to once per 10 s to prevent rapid-fire calls on mobile OS visibility cycling (Bug #27).
+  const lastVisibilityRefreshRef = useRef(0);
   useEffect(() => {
     if (demoMode) return;
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') refreshToken();
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastVisibilityRefreshRef.current < 10_000) return;
+      lastVisibilityRefreshRef.current = now;
+      refreshToken();
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);

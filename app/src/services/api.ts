@@ -1,6 +1,7 @@
 import type { Task, PomodoroSession, AppSettings } from '../types';
 import type { AuthUser } from './auth';
 import * as cryptoService from './crypto';
+import { normalizeTaskForUpdate } from '../utils/taskUpdate';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -173,7 +174,17 @@ async function encryptTask(task: Partial<Task>): Promise<Partial<Task>> {
 }
 
 async function decryptTask(task: Task): Promise<Task> {
-  if (!cryptoService.hasKey()) return task;
+  if (!cryptoService.hasKey()) {
+    // If any field looks encrypted but we have no key, surface a clear error
+    // rather than silently returning ciphertext to the UI (Bug #26)
+    for (const field of ENCRYPTED_FIELDS) {
+      const val = (task as any)[field];
+      if (typeof val === 'string' && cryptoService.isEncrypted(val)) {
+        throw new Error('Encryption key not ready');
+      }
+    }
+    return task;
+  }
   const out = { ...task };
   for (const field of ENCRYPTED_FIELDS) {
     const val = (out as any)[field];
@@ -209,7 +220,7 @@ export async function createTask(task: Task): Promise<Task> {
 }
 
 export async function updateTask(id: string, updates: Partial<Task>): Promise<Task> {
-  const encrypted = await encryptTask(updates);
+  const encrypted = await encryptTask(normalizeTaskForUpdate(updates) as Partial<Task>);
   const result = await request<Task>(`/api/tasks/${id}`, {
     method: 'PUT',
     body: JSON.stringify(toApi(encrypted)),
