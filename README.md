@@ -52,107 +52,27 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.3.3 — 2026-03-13
+
+Bug fixes: mobile logouts, encrypted blobs on login, repeated desktop notifications, time removal not syncing, "What's new?" firing on patch releases, move-to submenu requiring two taps.
+
+### v1.3.2 — 2026-03-13
+
+- **Ellipsis actions menu**: task actions tucked behind a `…` button, keeping the task row cleaner.
+- **Task titles wrap**: long titles no longer overflow on narrow screens.
+- **Backlog tag filter**: works the same way as the main list filter.
+
 ### v1.3.0 — 2026-03-11
 
-- **Fixed time in basic mode**: the fixed time toggle is now available without enabling Advanced mode.
-- **Undo bar auto-dismisses**: the undo/redo bar disappears after 10 seconds of inactivity.
-- **Invite token overhaul**: tokens are now multi-use with optional use limits, per-redemption usage tracking, and working revocation.
-- **Session stays alive after tab snooze**: the app refreshes its auth token when a snoozed tab wakes up, preventing unexpected sign-outs in browsers like Zen.
-- **Maintenance banner**: a banner appears automatically when the server is briefly unreachable during an update.
-- **What's new banner**: a dismissable notice appears once after each minor version update, linking to the changelog.
-- **Clickable version number**: the version in the top corner links to the GitHub changelog.
-- **Feedback links**: a GitHub issue link appears in the Help modal and in Settings → Account (Advanced mode).
-- **Markdown hint**: the Details field in the task form notes that Markdown is supported.
-- **PrideVer**: the project now uses [PrideVer](https://pridever.org) (`PROUD.DEFAULT.SHAME`) versioning.
+- **Password reset**: reset your password by email; resets the encryption key and revokes all sessions.
+- **Multi-use invite codes**: tokens can be used more than once, with optional limits and working revocation.
+- **Session stays alive after tab snooze**: auth token refreshes when a snoozed tab wakes up.
+- **Maintenance banner**: appears automatically when the server is briefly unreachable.
+- **"What's new?" banner**: shown once after each minor version update.
+- **Fixed time in basic mode**: available without enabling Advanced mode.
+- **Undo bar auto-dismisses**: disappears after 10 seconds of inactivity.
 
-### v1.2.6 — 2026-03-10
-
-- **Advanced mode now hides calendar events**: turning off Advanced mode removes calendar arcs from the clock and hides the calendar panel, so the view stays focused when you are not using calendar feeds.
-- **Simpler task form**: fixed time, important flag, tag, and repeat options are now hidden in the task form unless Advanced mode is on.
-- **Animated tick on task completion**: the checkmark draws itself when you mark a task done, giving a small moment of satisfaction.
-- **Warmer empty and all-done states**: when your task list is empty the copy is friendlier, and the "All done" confirmation now has a brief pop animation on the tick.
-- **Help modal rewritten in plain language**: all sections and FAQ answers are shorter and clearer.
-- **Settings panel close button**: now a plain cross rather than a filled circle, consistent with the rest of the UI.
-- **More space under the day picker**: breathing room between the date strip and the task area.
-
-### v1.2.5 — 2026-03-10
-
-- **Redesigned settings panel**: settings are now organised into five tabs — Look, Schedule, Calendars, Timer, and Account — so each group of options is easy to find without scrolling past unrelated controls.
-- **Theme picker**: Light, System, and Dark now appear as three clear buttons rather than a small segmented control.
-- **Colour scheme picker**: each swatch now shows its name, making it easier to tell Berry from Frost at a glance.
-- **Pomodoro cycle length**: you can now set how many focus sessions to complete before a long break. Previously this was fixed and could not be changed.
-- **Account tab**: export, import, and account deletion are now always visible rather than hidden behind a collapsible section.
-- **Performance**: the clock face now redraws once per minute instead of once per second, and several other render optimisations reduce unnecessary work in the background.
-- **Click outside to close**: clicking anywhere outside the settings panel now closes it.
-
-### v1.2.4 — 2026-03-10
-
-- **Month in the date strip**: the current month and year now appear in the week navigation bar, so you always know where you are. When a week spans two months, both are shown.
-- **Tag colours**: tags on the same day are now always clearly distinct colours. Previously two tags could end up looking identical if they happened to map to the same colour slot.
-- **Smoother day switching**: switching to a different day now updates the task list immediately, rather than briefly showing the previous day's tasks while the sync catches up.
-- **Delete user confirmation**: the admin dashboard now requires a second click to confirm before deleting a user account, preventing accidental deletions.
-- **Privacy policy**: the data controller is now listed as Dynamic Skillset Ltd.
-- **Help page**: the privacy answer in the help panel now explains that task content is encrypted on your device and the server cannot read it.
-
-### v1.2.3 — 2026-03-10
-
-- **End-to-end encryption**: task titles, tags, and notes are encrypted on your device before being sent to the server. The encryption key is derived from your password and never leaves your browser. The server stores only ciphertext.
-- **Calendar URLs stay private**: iCal URLs are now stored only in your browser and are never synced to the server.
-- **Better login speed**: password verification now runs in the background rather than blocking the server, so login feels faster. Existing passwords are gradually upgraded to the faster approach.
-- **Navigation**: a week strip replaces the single previous/next arrows, so you can jump to any day in the current week at a glance. Week arrows let you move a full week at a time.
-- **Multiple tags**: tasks can now have several tags, separated by commas. Tags show as small coloured chips in the task list and on the clock.
-- **Clock hand colour**: the clock hand now uses a complementary colour to make it easier to see against your chosen colour scheme.
-- **Advanced mode**: the toggle now has a clearer description of what it unlocks — calendar feeds, recurring tasks, backlog, and Pomodoro timer.
-- **More options open by default**: the expanded task form is now shown by default when adding or editing a task.
-- **Removed Yellow colour scheme**: the yellow scheme has been removed. Existing users are automatically switched to Berry.
-
-### v1.2.1 — 2026-03-10
-
-- **Berry is now the default colour scheme** for new users, replacing the previous warm gold default.
-- **Working days** (advanced settings): choose which days of the week you work; the previous/next day arrows skip non-working days automatically.
-- **Accessibility**: clock face task arcs now report their active state to screen readers; the task list announces that drag-to-reorder is available; links in the help panel show a focus ring when navigating by keyboard; action buttons on the backlog list are now a full 44×44px touch target; settings panel collapses to a single column on narrow screens.
-- **Performance**: reduced unnecessary recalculations when switching between tasks on the same minute.
-
-### v1.1.1 — 2026-03-10
-
-- **Privacy policy**: a full privacy policy is now at `/privacy`, linked from the login page and the help panel.
-- **Login inputs**: the email and password fields now have a visible border so they stand out against the dark background.
-
-### v1.1.0 — 2026-03-10
-
-- **Multi-user support**: TaskDial now supports multiple accounts. Each person sees only their own tasks and settings.
-- **Sign up and log in**: create an account with an invite code; sessions refresh automatically so you stay logged in.
-- **Admin dashboard**: the owner account gets a panel at `/admin` to manage users, create and revoke invite codes, and view an audit log.
-- **Security**: passwords are hashed, tokens are stored in secure httpOnly cookies rather than localStorage, and all data is scoped to the logged-in user.
-
-### v1.0.4 — 2026-03-09
-
-- **Drag to reorder**: drag tasks up and down the list to change their order on the clock. The up/down buttons remain available on touch devices.
-- **Accessibility**: screen readers now get clear descriptions for the Pomodoro timer, recurring task badge, conflict and overflow warnings, day start/end time inputs, and colour scheme options.
-
-### v1.0.3 — 2026-03-09
-
-- **Undo/redo**: undo or redo the last task action with Cmd+Z / Cmd+Shift+Z, or use the bar at the bottom of the screen.
-- **Tag filtering**: when tasks have different tags, filter pills appear above the task list.
-- **First-time onboarding**: new users see a short explanation of how the app works, with a link to try demo mode.
-- **Browser notifications**: the app notifies you when a scheduled task is about to start.
-
-### v1.0.2 — 2026-03-09
-
-- The highlight colour now defaults to warm gold instead of blue.
-- Tags are assigned distinct colours that are clearly different from each other.
-- The Pomodoro timer ring and dots follow the active highlight colour.
-- Demo mode shows different tasks and calendar events on different days.
-
-### v1.0.1 — 2026-03-09
-
-- Calendar events from other time zones now appear at the correct local time.
-- The app version number is shown in the top-left corner.
-- Task titles on mobile now wrap instead of being cut off.
-
-### v1.0.0 — 2026-03-05
-
-First release: clock face visualisation, Pomodoro timer, task management, calendar feeds, recurring tasks, backlog, colour schemes, offline sync, PWA install, help page.
+See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
 ---
 
