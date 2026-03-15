@@ -76,6 +76,9 @@ const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ onComplet
       return;
     }
 
+    // Scroll target into view instantly (before measuring) so getBoundingClientRect is accurate
+    target.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'nearest' });
+
     const rect = target.getBoundingClientRect();
 
     setSpotlightStyle({

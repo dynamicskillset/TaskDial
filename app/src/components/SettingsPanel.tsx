@@ -450,6 +450,9 @@ export function SettingsPanel({
               <details className="sp-ical-guide">
                 <summary className="sp-ical-guide__summary">How to find your iCal URL</summary>
                 <div className="sp-ical-guide__body">
+                  <p className="sp-ical-guide__privacy">
+                    🔒 Your iCal URL and calendar data are fetched directly by your browser and never sent to TaskDial's servers.
+                  </p>
                   <div className="sp-ical-guide__provider">
                     <span className="sp-ical-guide__provider-name">Google Calendar</span>
                     <ol className="sp-ical-guide__steps">

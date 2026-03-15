@@ -735,6 +735,17 @@ details[open] .sp-ical-guide__summary::before {
   font-weight: 600;
 }
 
+.sp-ical-guide__privacy {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  border-left: 3px solid var(--color-success);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
 .sp-ical-guide__steps a {
   color: var(--color-accent);
   text-decoration: underline;
