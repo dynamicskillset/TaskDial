@@ -669,6 +669,7 @@ export function getDemoSettings(): AppSettings {
     flashWhenTimeUp: true,
     icalUrls: [],
     workingDays: [1, 2, 3, 4, 5],
+    weekStartDay: 1,
   };
 }
 
