@@ -40,6 +40,23 @@
   margin: 0;
 }
 
+.task-list__empty-message--btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.task-list__empty-message--btn:hover {
+  color: var(--tl-text);
+  background: none;
+}
+
 .task-list--onboarding {
   padding: 1.5rem 1.25rem;
   text-align: left;

@@ -215,6 +215,14 @@
   box-sizing: border-box;
 }
 
+html {
+  /* Explicit background on <html> ensures full-viewport coverage and correct
+     repaints when data-theme attribute changes (fixes Firefox/Windows regression). */
+  background-color: var(--color-bg);
+  /* Reserve scrollbar space to prevent layout shifts when content height changes. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   min-width: 320px;

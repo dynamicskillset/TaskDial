@@ -433,10 +433,11 @@ export function SettingsPanel({
                   <div className="sp-ical-guide__provider">
                     <span className="sp-ical-guide__provider-name">Google Calendar</span>
                     <ol className="sp-ical-guide__steps">
-                      <li>Open Google Calendar on the web</li>
+                      <li>Open <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">Google Calendar</a> on the web</li>
                       <li>Click the three dots next to a calendar on the left</li>
                       <li>Choose <strong>Settings and sharing</strong></li>
                       <li>Scroll to <strong>Secret address in iCal format</strong> and copy the link</li>
+                      <li>Paste the link in the field below and click <strong>Load</strong></li>
                     </ol>
                   </div>
                   <div className="sp-ical-guide__provider">

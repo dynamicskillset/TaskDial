@@ -44,6 +44,15 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--tf-input-focus-border) 15%, transparent);
 }
 
+.task-form__editing-date {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--tf-input-focus-border);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0 0.125rem 0.35rem;
+}
+
 /* ============================================================
    Row layout
    ============================================================ */

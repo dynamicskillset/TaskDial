@@ -14,6 +14,7 @@ interface ClockFaceProps {
   meetingBufferMinutes?: number;
   autoAdvance?: boolean;
   isToday?: boolean;
+  date: string;
   dayStartHour: number;
   dayEndHour: number;
   use24Hour: boolean;
@@ -545,11 +546,16 @@ const TimeHand = React.memo(function TimeHand({
   currentTime,
   dayStart,
   dayEnd,
+  isToday,
 }: {
   currentTime: Date;
   dayStart: number;
   dayEnd: number;
+  isToday: boolean;
 }) {
+  // Only meaningful on today's clock
+  if (!isToday) return null;
+
   const hours = currentTime.getHours();
   const minutes = currentTime.getMinutes();
   const totalHour = hours + minutes / 60;
@@ -579,27 +585,42 @@ const TimeHand = React.memo(function TimeHand({
 const CenterDisplay = React.memo(function CenterDisplay({
   currentTime,
   use24Hour,
+  isToday,
+  date,
 }: {
   currentTime: Date;
   use24Hour: boolean;
+  isToday: boolean;
+  date: string;
 }) {
-  const dateStr = currentTime.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
+  let dateStr: string;
+  let timeStr: string | null = null;
 
-  let timeStr: string;
-  if (use24Hour) {
-    timeStr = currentTime.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
+  if (isToday) {
+    dateStr = currentTime.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
     });
+    if (use24Hour) {
+      timeStr = currentTime.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else {
+      timeStr = currentTime.toLocaleTimeString('en-GB', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    }
   } else {
-    timeStr = currentTime.toLocaleTimeString('en-GB', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
+    // Viewing a different day — show that day's date, no live clock
+    const viewedDate = new Date(date + 'T00:00:00');
+    dateStr = viewedDate.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
     });
   }
 
@@ -611,12 +632,14 @@ const CenterDisplay = React.memo(function CenterDisplay({
         r={INNER_R - 4}
         className="clock-face__center-disc"
       />
-      <text x={CX} y={CY - 12} className="clock-face__center-date">
+      <text x={CX} y={timeStr ? CY - 12 : CY + 6} className="clock-face__center-date">
         {dateStr}
       </text>
-      <text x={CX} y={CY + 16} className="clock-face__center-time">
-        {timeStr}
-      </text>
+      {timeStr && (
+        <text x={CX} y={CY + 16} className="clock-face__center-time">
+          {timeStr}
+        </text>
+      )}
     </g>
   );
 });
@@ -629,6 +652,7 @@ const ClockFace: React.FC<ClockFaceProps> = ({
   meetingBufferMinutes = 0,
   autoAdvance = true,
   isToday = true,
+  date,
   dayStartHour,
   dayEndHour,
   use24Hour,
@@ -739,15 +763,21 @@ const ClockFace: React.FC<ClockFaceProps> = ({
           />
         ))}
 
-        {/* Current-time hand */}
+        {/* Current-time hand — only on today's clock */}
         <TimeHand
           currentTime={currentTime}
           dayStart={dayStartHour}
           dayEnd={dayEndHour}
+          isToday={isToday}
         />
 
         {/* Center display */}
-        <CenterDisplay currentTime={currentTime} use24Hour={use24Hour} />
+        <CenterDisplay
+          currentTime={currentTime}
+          use24Hour={use24Hour}
+          isToday={isToday}
+          date={date}
+        />
       </svg>
     </div>
   );

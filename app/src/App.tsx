@@ -310,13 +310,15 @@ function App({ user, onLogout }: AppProps) {
     }
     setIcalLoading(true);
     const errors: (string | null)[] = urls.map(() => null);
-    const caches: (string | null)[] = urls.map(() => null);
+    // Start with existing cached data so a transient network failure doesn't clear events
+    const caches: (string | null)[] = urls.map((_, i) => icsCache.current[i] ?? null);
     await Promise.all(urls.map(async (url, i) => {
       if (!url.trim()) return;
       try {
         caches[i] = await fetchCalendar(url);
       } catch (err: unknown) {
         errors[i] = err instanceof Error ? err.message : 'Failed to load calendar';
+        // caches[i] retains last successful data — events are preserved on transient failure
       }
     }));
     icsCache.current = caches;
@@ -465,6 +467,21 @@ function App({ user, onLogout }: AppProps) {
     if (reorgDismissed) setReorgDismissed(false);
   }
   const showReorgBanner = !!suggestedOrdering && !reorgDismissed;
+
+  // When editing a task from a different day, use that task's date and parse events for it
+  const taskFormDate = editingTask ? editingTask.date : date;
+  const taskFormCalendarEvents = useMemo(() => {
+    if (taskFormDate === date) return calendarEvents;
+    // Parse ICS cache for the editing task's date
+    const valid = icsCache.current.filter(Boolean) as string[];
+    if (!valid.length) return [];
+    const seen = new Set<string>();
+    const events: CalendarEvent[] = [];
+    valid.forEach(c => parseIcalEvents(c, taskFormDate).forEach(e => {
+      if (!seen.has(e.uid)) { seen.add(e.uid); events.push(e); }
+    }));
+    return events;
+  }, [taskFormDate, calendarEvents, date]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge scheduling metadata (overflows, meetingConflict) into full task list for TaskList
   const tasksWithScheduleInfo: ScheduledTask[] = useMemo(() => {
@@ -1249,12 +1266,17 @@ function App({ user, onLogout }: AppProps) {
         <button className="date-nav__week-btn" onClick={goNextWeek} aria-label="Next week">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
-        {date !== todayString() && (
-          <button onClick={goToday} className="today-btn" title="Go to today">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10 2 L10 8 L3 8 M5.5 5.5 L3 8 L5.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Today
-          </button>
-        )}
+        {/* Always rendered to prevent layout shift; hidden via CSS when already on today */}
+        <button
+          onClick={goToday}
+          className="today-btn"
+          title="Go to today"
+          aria-hidden={date === todayString()}
+          style={{ visibility: date !== todayString() ? 'visible' : 'hidden' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10 2 L10 8 L3 8 M5.5 5.5 L3 8 L5.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Today
+        </button>
       </div>
 
       <main className={`app-main${settings.clockPosition === 'right' ? ' app-main--clock-right' : ''}`}>
@@ -1265,6 +1287,7 @@ function App({ user, onLogout }: AppProps) {
             meetingBufferMinutes={settings.advancedMode ? settings.meetingBufferMinutes : 0}
             autoAdvance={settings.autoAdvance}
             isToday={isToday}
+            date={date}
             dayStartHour={settings.dayStartHour}
             dayEndHour={settings.dayEndHour}
             use24Hour={settings.use24Hour}
@@ -1469,9 +1492,9 @@ function App({ user, onLogout }: AppProps) {
                             onSubmit={editingTask ? handleUpdateTask : handleAddTask}
                             editingTask={editingTask}
                             onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
-                            date={date}
+                            date={taskFormDate}
                             existingTags={[...new Set(tasks.flatMap(t => t.tag ? t.tag.split(',').map(s => s.trim()).filter(Boolean) : []))]}
-                            calendarEvents={calendarEvents}
+                            calendarEvents={taskFormCalendarEvents}
                             meetingBufferMinutes={settings.meetingBufferMinutes}
                             use24Hour={settings.use24Hour}
                             enableRecurring={settings.enableRecurringTasks}
@@ -1552,6 +1575,7 @@ function App({ user, onLogout }: AppProps) {
                             onMoveAllToTomorrow={handleMoveAllToTomorrow}
                             isFirstVisit={isFirstVisit && !demoMode}
                             onTryDemo={enterDemoMode}
+                            onAddTask={() => { setEditingTask(undefined); setShowForm(true); }}
                           />
                         </div>
                       )}
@@ -1593,9 +1617,9 @@ function App({ user, onLogout }: AppProps) {
                   onSubmit={editingTask ? handleUpdateTask : handleAddTask}
                   editingTask={editingTask}
                   onCancel={editingTask ? () => setEditingTask(undefined) : undefined}
-                  date={date}
+                  date={taskFormDate}
                   existingTags={[...new Set(tasks.flatMap(t => t.tag ? t.tag.split(',').map(s => s.trim()).filter(Boolean) : []))]}
-                  calendarEvents={calendarEvents}
+                  calendarEvents={taskFormCalendarEvents}
                   meetingBufferMinutes={settings.meetingBufferMinutes}
                   use24Hour={settings.use24Hour}
                   enableRecurring={settings.enableRecurringTasks}
@@ -1656,6 +1680,7 @@ function App({ user, onLogout }: AppProps) {
                   onMoveAllToTomorrow={handleMoveAllToTomorrow}
                   isFirstVisit={isFirstVisit && !demoMode}
                   onTryDemo={enterDemoMode}
+                  onAddTask={() => setEditingTask(undefined)}
                 />
               </div>
             </>

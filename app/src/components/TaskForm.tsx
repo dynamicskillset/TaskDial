@@ -184,6 +184,13 @@ export default function TaskForm({ onSubmit, editingTask, onCancel, date, existi
       onSubmit={handleSubmit}
       onKeyDown={handleKeyDown}
     >
+      {/* Show scheduled date when editing — helpful when editing a task from another day */}
+      {editingTask && (
+        <div className="task-form__editing-date">
+          Editing task for {new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+        </div>
+      )}
+
       {/* Title */}
       <div className="task-form__row task-form__row--title">
         <input

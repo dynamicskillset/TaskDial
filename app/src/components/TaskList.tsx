@@ -22,6 +22,7 @@ interface TaskListProps {
   onMoveAllToTomorrow?: () => void;
   isFirstVisit?: boolean;
   onTryDemo?: () => void;
+  onAddTask?: () => void;
 }
 
 // Compiled once at module load — avoids recompilation on every renderInline call
@@ -444,6 +445,7 @@ export default function TaskList({
   onMoveAllToTomorrow,
   isFirstVisit,
   onTryDemo,
+  onAddTask,
 }: TaskListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -631,7 +633,13 @@ export default function TaskList({
     }
     return (
       <div className="task-list task-list--empty">
-        <p className="task-list__empty-message">Your day is clear. Add a task to get started.</p>
+        {onAddTask ? (
+          <button className="task-list__empty-message task-list__empty-message--btn" onClick={onAddTask}>
+            Your day is clear. Tap to add a task.
+          </button>
+        ) : (
+          <p className="task-list__empty-message">Your day is clear. Add a task to get started.</p>
+        )}
       </div>
     );
   }
