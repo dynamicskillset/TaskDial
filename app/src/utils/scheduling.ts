@@ -41,18 +41,24 @@ export function nearestWorkingDay(
   return dateStr; // fallback: no working day found in range
 }
 
-/** Returns the YYYY-MM-DD of the Monday of the ISO week containing dateStr. */
-export function getWeekMonday(dateStr: string): string {
+/** Returns the YYYY-MM-DD of the week-start day (Monday by default) containing dateStr. */
+export function getWeekMonday(dateStr: string, weekStartDay: 1 | 7 = 1): string {
   const d = new Date(dateStr + 'T00:00:00');
   const isoDay = toIsoDay(d.getDay()); // 1=Mon … 7=Sun
-  d.setDate(d.getDate() - (isoDay - 1));
+  const offset = weekStartDay === 7
+    ? (isoDay === 7 ? 0 : isoDay)   // Sun=0, Mon=1, …, Sat=6
+    : isoDay - 1;                    // Mon=0, Tue=1, …, Sun=6
+  d.setDate(d.getDate() - offset);
   return toLocalDateString(d);
 }
 
-/** Returns the YYYY-MM-DD for a given ISO weekday (1=Mon … 7=Sun) within the week of weekMonday. */
-export function weekDayDate(weekMonday: string, isoWeekday: number): string {
-  const d = new Date(weekMonday + 'T00:00:00');
-  d.setDate(d.getDate() + (isoWeekday - 1));
+/** Returns the YYYY-MM-DD for a given ISO weekday (1=Mon … 7=Sun) within the week starting at weekStart. */
+export function weekDayDate(weekStart: string, isoWeekday: number, weekStartDay: 1 | 7 = 1): string {
+  const d = new Date(weekStart + 'T00:00:00');
+  const offset = weekStartDay === 7
+    ? (isoWeekday === 7 ? 0 : isoWeekday)  // Sun=0, Mon=1, …, Sat=6
+    : isoWeekday - 1;                       // Mon=0, Tue=1, …, Sun=6
+  d.setDate(d.getDate() + offset);
   return toLocalDateString(d);
 }
 

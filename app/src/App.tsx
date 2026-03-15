@@ -282,6 +282,7 @@ function App({ user, onLogout }: AppProps) {
   const [icalUrlInputs, setIcalUrlInputs] = useState<string[]>(initIcalUrls);
   const [icalLoading, setIcalLoading] = useState(false);
   const [icalErrors, setIcalErrors] = useState<(string | null)[]>([null]);
+  const [icalSyncedAt, setIcalSyncedAt] = useState<Date | null>(null);
   const initCommitted = (): string[] => settings.icalUrls?.length ? settings.icalUrls : (settings.icalUrl ? [settings.icalUrl] : []);
   const [committedIcalUrls, setCommittedIcalUrls] = useState<string[]>(initCommitted);
   const icsCache = useRef<(string | null)[]>([]);
@@ -328,6 +329,7 @@ function App({ user, onLogout }: AppProps) {
     );
     setCalendarEvents(allEvents);
     setIcalLoading(false);
+    setIcalSyncedAt(new Date());
   }, [date]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch when committed URLs change
@@ -942,11 +944,12 @@ function App({ user, onLogout }: AppProps) {
 
   // Date navigation
   const goToday = () => setDate(todayString());
-  const weekMonday = useMemo(() => getWeekMonday(date), [date]);
+  const weekStartDay = settings.weekStartDay ?? 1;
+  const weekMonday = useMemo(() => getWeekMonday(date, weekStartDay), [date, weekStartDay]);
   const visibleDays = useMemo(() => {
     const days = settings.workingDays.length > 0 ? settings.workingDays : [1, 2, 3, 4, 5];
-    return days.map(isoDay => weekDayDate(weekMonday, isoDay));
-  }, [weekMonday, settings.workingDays]);
+    return days.map(isoDay => weekDayDate(weekMonday, isoDay, weekStartDay));
+  }, [weekMonday, settings.workingDays, weekStartDay]);
   const goPrevWeek = () => setDate(shiftDate(weekMonday, -7));
   const goNextWeek = () => setDate(shiftDate(weekMonday, 7));
 
@@ -1176,6 +1179,7 @@ function App({ user, onLogout }: AppProps) {
           onIcalUrlsChange={setIcalUrlInputs}
           icalLoading={icalLoading}
           icalErrors={icalErrors}
+          icalSyncedAt={icalSyncedAt}
           calendarEvents={calendarEvents}
           committedIcalUrls={committedIcalUrls}
           onLoadCalendar={handleLoadCalendar}

@@ -64,7 +64,7 @@
 }
 
 @keyframes onboarding-card-in {
-  from { opacity: 0; transform: scale(0.95) translateY(var(--ty, -50%)) translateX(var(--tx, 0)); }
+  from { opacity: 0; }
   to   { opacity: 1; }
 }
 

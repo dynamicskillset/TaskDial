@@ -71,6 +71,7 @@ export interface AppSettings {
   enableSounds: boolean;
   flashWhenTimeUp: boolean;
   workingDays: number[]; // ISO weekday numbers: 1=Mon … 7=Sun. Empty = all days.
+  weekStartDay: 1 | 7;  // 1=Monday (default), 7=Sunday
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -95,4 +96,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enableSounds: false,
   flashWhenTimeUp: true,
   workingDays: [1, 2, 3, 4, 5], // Mon–Fri by default
+  weekStartDay: 1,
 };

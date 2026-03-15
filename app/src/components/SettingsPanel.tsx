@@ -31,6 +31,7 @@ export interface SettingsPanelProps {
   onIcalUrlsChange: (urls: string[]) => void;
   icalLoading: boolean;
   icalErrors: (string | null)[];
+  icalSyncedAt: Date | null;
   calendarEvents: CalendarEvent[];
   committedIcalUrls: string[];
   onLoadCalendar: () => void;
@@ -138,6 +139,7 @@ export function SettingsPanel({
   onIcalUrlsChange,
   icalLoading,
   icalErrors,
+  icalSyncedAt,
   calendarEvents,
   committedIcalUrls,
   onLoadCalendar,
@@ -385,6 +387,24 @@ export function SettingsPanel({
 
               <Divider />
 
+              <Row label="Week starts on">
+                <div className="sp-seg" role="group" aria-label="Week start day">
+                  {([{ label: 'Monday', value: 1 }, { label: 'Sunday', value: 7 }] as { label: string; value: 1 | 7 }[]).map(({ label, value }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`sp-seg__btn${(settings.weekStartDay ?? 1) === value ? ' sp-seg__btn--active' : ''}`}
+                      onClick={() => set({ weekStartDay: value })}
+                      aria-pressed={(settings.weekStartDay ?? 1) === value}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </Row>
+
+              <Divider />
+
               <Row label="Auto-advance" hint="Schedule from the current time, not the day start">
                 <Toggle
                   checked={settings.autoAdvance}
@@ -543,13 +563,14 @@ export function SettingsPanel({
                   {icalLoading ? 'Loading…' : committedIcalUrls.length ? 'Reload' : 'Load'}
                 </button>
               </div>
-              {calendarEvents.length > 0 && (
-                <p className="sp-status sp-status--ok">
-                  {calendarEvents.length} event{calendarEvents.length !== 1 ? 's' : ''} loaded
+              {icalSyncedAt && !icalLoading && (
+                <p className={`sp-status ${calendarEvents.length > 0 ? 'sp-status--ok' : ''}`}>
+                  {calendarEvents.length > 0
+                    ? `${calendarEvents.length} event${calendarEvents.length !== 1 ? 's' : ''} today`
+                    : 'No events for this date'
+                  }
+                  {' · '}Synced {icalSyncedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
-              )}
-              {committedIcalUrls.length > 0 && !icalErrors.some(Boolean) && calendarEvents.length === 0 && !icalLoading && (
-                <p className="sp-status">No events for this date</p>
               )}
 
               {committedIcalUrls.length > 0 && (

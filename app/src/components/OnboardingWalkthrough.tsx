@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import './OnboardingWalkthrough.css';
 
 interface Step {
@@ -133,13 +133,6 @@ const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ onComplet
     setCardStyle({ top, left, transform, width: CARD_W });
   }, [step, current.target, current.cardSide]);
 
-  // Scroll target into view
-  useEffect(() => {
-    if (!current.target) return;
-    const target = document.querySelector(`[data-onboarding="${current.target}"]`);
-    target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [step, current.target]);
-
   function next() {
     if (step < STEPS.length - 1) setStep(s => s + 1);
     else onComplete();
@@ -155,7 +148,7 @@ const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ onComplet
         <div className="onboarding__spotlight" style={spotlightStyle} aria-hidden="true" />
       )}
 
-      <div className="onboarding__card" style={cardStyle} ref={cardRef}>
+      <div className="onboarding__card" style={cardStyle} ref={cardRef} key={step}>
         <div className="onboarding__progress" aria-hidden="true">
           {STEPS.map((_, i) => (
             <span

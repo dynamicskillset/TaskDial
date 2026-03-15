@@ -520,6 +520,42 @@
   flex-shrink: 0;
 }
 
+/* ── Segmented control (Mon/Sun week start, etc.) ───────────────────────────── */
+
+.sp-seg {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.sp-seg__btn {
+  flex: 1;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sp-seg__btn + .sp-seg__btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.sp-seg__btn--active {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.sp-seg__btn:hover:not(.sp-seg__btn--active) {
+  background: var(--color-btn-hover-bg);
+  color: var(--color-text);
+}
+
 /* ── Working days ───────────────────────────────────────────────────────────── */
 
 .sp-days {
