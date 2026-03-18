@@ -404,11 +404,20 @@ function App({ user, onLogout }: AppProps) {
     if (demoMode) return;
     if (!settings.enableBacklog) return;
     const fetchBacklog = async () => {
+      // Guard: if decryption errors occur during this fetch, don't overwrite the
+      // current list with a partial/empty result (key may not be ready on mobile).
+      let hadDecryptionErrors = false;
+      const errorHandler = () => { hadDecryptionErrors = true; };
+      window.addEventListener('tasks:decryptionErrors', errorHandler, { once: true });
       try {
         const data = await apiFetchTasks('backlog');
-        setBacklogTasks(data);
+        if (!hadDecryptionErrors) {
+          setBacklogTasks(data);
+        }
       } catch {
         // Offline or error — ignore
+      } finally {
+        window.removeEventListener('tasks:decryptionErrors', errorHandler);
       }
     };
     fetchBacklog();

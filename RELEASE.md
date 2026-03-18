@@ -18,6 +18,7 @@ Follow this in order every time. Do not skip steps.
 - [ ] Restart the Vite dev server after bumping (`npm run dev`) — APP_VERSION is baked at startup
 - [ ] Write **CHANGELOG.md** entry (full detail, bullet per change)
 - [ ] Write **README.md** entry (condensed, one or two bullets per feature)
+- [ ] **README.md pruning rule**: when writing a DEFAULT (minor) release entry, remove all patch entries from the previous DEFAULT cycle. Keep only the most recent DEFAULT entry plus the current one as rolling history. Full detail always lives in CHANGELOG.md.
 - [ ] Run tests one final time: `cd app && npm test`
 - [ ] Commit everything: `git add -A && git commit -m "feat: vX.Y.Z — short description"`
 
