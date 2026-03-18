@@ -82,8 +82,9 @@ const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ onComplet
     const rect = target.getBoundingClientRect();
 
     setSpotlightStyle({
-      top: rect.top - pad,
-      left: rect.left - pad,
+      top: 0,
+      left: 0,
+      transform: `translate(${rect.left - pad}px, ${rect.top - pad}px)`,
       width: rect.width + pad * 2,
       height: rect.height + pad * 2,
     });

@@ -84,6 +84,7 @@
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  min-height: 44px;
   cursor: pointer;
   user-select: none;
 }
@@ -115,7 +116,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-submit-text);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -305,9 +306,11 @@
 
 .sp-toggle {
   position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -322,7 +325,8 @@
 
 .sp-toggle__track {
   position: absolute;
-  inset: 0;
+  width: 36px;
+  height: 20px;
   border-radius: 20px;
   background: var(--color-toggle-track);
   transition: background 0.18s;
@@ -337,7 +341,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-submit-text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -547,7 +551,7 @@
 
 .sp-seg__btn--active {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
   font-weight: 600;
 }
 
@@ -597,7 +601,7 @@
 .sp-day--active {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
   font-weight: 600;
 }
 
@@ -1077,9 +1081,9 @@ details[open] .sp-ical-guide__summary::before {
 }
 
 .sp-preset-pill__remove:hover {
-  background: var(--color-danger, #c0392b);
-  border-color: var(--color-danger, #c0392b);
-  color: #fff;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-submit-text);
 }
 
 .sp-preset-add-pill {

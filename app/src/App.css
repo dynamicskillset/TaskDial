@@ -76,7 +76,7 @@
 
 .theme-toggle__btn--active {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
 }
 
 .theme-toggle__btn:not(.theme-toggle__btn--active):hover {
@@ -396,7 +396,8 @@
 
 .modal-box__input:focus {
   outline: none;
-  border-color: var(--color-text-secondary);
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .modal-box__error {
@@ -438,7 +439,7 @@
 
 .modal-box__confirm--danger {
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-submit-text);
   border-color: var(--color-danger);
 }
 
@@ -773,7 +774,7 @@
 .working-days-picker__day:hover {
   background-color: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
 }
 
 /* Checked — solid fill */
@@ -786,7 +787,7 @@
 .working-days-picker__day:has(input:checked):hover {
   background-color: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
 }
 
 /* Keyboard focus */
@@ -865,8 +866,8 @@
 }
 
 .date-nav__week-btn {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -911,7 +912,7 @@
 .date-nav__day--active {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-submit-text, #fff);
+  color: var(--color-submit-text);
 }
 
 .date-nav__day--active:hover {

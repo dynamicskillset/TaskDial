@@ -19,13 +19,30 @@
   --pomo-dot-border: var(--color-accent);
   --pomo-dot-filled: var(--color-accent);
 
-  /* Break colours — ring/label use vivid shades; button uses darker for contrast */
+  /* Break colours — vivid shades for dark backgrounds; see light-mode overrides below */
   --pomo-short-break: #A3BE8C;
   --pomo-short-break-btn: #4E7A38;
   --pomo-short-break-btn-hover: #65994C;
   --pomo-long-break: #B48EAD;
   --pomo-long-break-btn: #7B5678;
   --pomo-long-break-btn-hover: #9A7297;
+}
+
+/* Light-mode: darken break label/ring colours for WCAG AA text contrast (4.5:1) */
+:root[data-theme="light"] .pomodoro-timer,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .pomodoro-timer {
+  --pomo-short-break: #3D6B2A;
+  --pomo-long-break: #6B3E68;
+}
+
+:root[data-theme="light"] .scheme-evergreen .pomodoro-timer,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .scheme-evergreen .pomodoro-timer {
+  --pomo-short-break: #2A6665;
+}
+
+:root[data-theme="light"] .scheme-berry .pomodoro-timer,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .scheme-berry .pomodoro-timer {
+  --pomo-long-break: #8B4A25;
 }
 
 /* ============================================================

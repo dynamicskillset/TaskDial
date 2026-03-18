@@ -84,12 +84,12 @@
 
 .extend-prompt__btn--extend {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-submit-text);
 }
 
 .extend-prompt__btn--done {
-  background: var(--color-success, hsl(120, 40%, 50%));
-  color: #fff;
+  background: var(--color-success);
+  color: var(--color-submit-text);
 }
 
 .extend-prompt__btn--dismiss {

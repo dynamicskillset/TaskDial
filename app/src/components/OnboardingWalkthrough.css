@@ -18,49 +18,41 @@
     0 0 0 9999px rgba(0, 0, 0, 0.3),
     0 0 0 3px var(--color-accent);
   pointer-events: none;
-  transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+  transition: transform 0.3s var(--ease-out), width 0.3s var(--ease-out), height 0.3s var(--ease-out);
 }
 
-/* Step card */
+/* Step card — uses dedicated variables so dark mode can invert to a light card */
 .onboarding__card {
+  --ow-card-bg: var(--color-surface);
+  --ow-card-border: var(--color-accent);
+  --ow-card-text: var(--color-text);
+  --ow-card-body: var(--color-text-secondary);
+  --ow-card-skip: var(--color-text-secondary);
+  --ow-card-dot: var(--color-border);
+  --ow-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+
   position: fixed;
   z-index: 1002;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-accent);
+  background: var(--ow-card-bg);
+  border: 1.5px solid var(--ow-card-border);
   border-radius: 14px;
   padding: 1.1rem 1.2rem 0.9rem;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--ow-card-shadow);
+  color: var(--ow-card-text);
   width: 280px;
   max-width: calc(100vw - 2rem);
-  animation: onboarding-card-in 0.2s ease-out;
+  animation: onboarding-card-in 0.2s var(--ease-out);
 }
 
-/* In dark mode, flip the card to light so it stands out against the dim overlay */
+/* In dark mode, flip the card to a light surface so it stands out against the dim overlay */
 :root[data-theme="dark"] .onboarding__card {
-  background: #f0f0f4;
-  border-color: #c8c0d8;
-  color: #1a1a2e;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-:root[data-theme="dark"] .onboarding__title {
-  color: #1a1a2e;
-}
-
-:root[data-theme="dark"] .onboarding__body {
-  color: #3a3a4e;
-}
-
-:root[data-theme="dark"] .onboarding__skip {
-  color: #5a5a7a;
-}
-
-:root[data-theme="dark"] .onboarding__dot {
-  background: #c0b8d0;
-}
-
-:root[data-theme="dark"] .onboarding__dot--active {
-  background: var(--color-accent);
+  --ow-card-bg: #ECEFF4;
+  --ow-card-border: #9E85B0;
+  --ow-card-text: #2E3440;
+  --ow-card-body: #3B4252;
+  --ow-card-skip: #4C566A;
+  --ow-card-dot: #9AAABB;
+  --ow-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes onboarding-card-in {
@@ -79,24 +71,24 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-border);
+  background: var(--ow-card-dot);
   transition: background 0.2s;
 }
 
 .onboarding__dot--active {
-  background: var(--color-accent);
+  background: var(--ow-card-border);
 }
 
 .onboarding__title {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--ow-card-text);
   margin: 0 0 0.4rem;
 }
 
 .onboarding__body {
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  color: var(--ow-card-body);
   line-height: 1.5;
   margin: 0 0 0.9rem;
 }
@@ -110,7 +102,7 @@
 .onboarding__skip {
   background: none;
   border: none;
-  color: var(--color-text-secondary);
+  color: var(--ow-card-skip);
   font-size: 0.8rem;
   cursor: pointer;
   padding: 0.25rem 0;
@@ -118,11 +110,11 @@
   text-underline-offset: 2px;
 }
 
-.onboarding__skip:hover { color: var(--color-text); }
+.onboarding__skip:hover { color: var(--ow-card-text); }
 
 .onboarding__next {
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--ow-card-border);
+  color: var(--color-submit-text);
   border: none;
   border-radius: 8px;
   padding: 0.45rem 1rem;
