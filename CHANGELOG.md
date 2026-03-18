@@ -4,6 +4,17 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ---
 
+### v1.5.1 — 2026-03-18
+
+Bug fixes and settings polish.
+
+- **Actions menu no longer hidden under the next item on break tasks**: break items carry `opacity: 0.6`, which creates a CSS stacking context that confined the fixed-position menu. The menu is now rendered via a React portal into `document.body`, so it always appears on top regardless of the parent item's opacity.
+- **Duration quick-picks moved to Settings → Schedule**: these presets relate to how long tasks and breaks are, not to the Pomodoro timer — Schedule is the right home. The Timer tab is now Pomodoro-only, making its name accurate.
+- **Duration quick-picks redesigned as editable pill chips**: replaced the number-spinner inputs and separate +/− row buttons with rounded pill chips. Each pill contains a spinner-free inline number input; hover reveals a × to remove that slot; a dashed circle + adds a new one.
+- **Duplicate settings rows removed from Calendars tab**: Recurring tasks, Backlog, and Day time summary toggles were incorrectly appearing on both the Schedule and Calendars tabs. They now appear only under Schedule.
+
+---
+
 ### v1.5.0 — 2026-03-18
 
 Four improvements: two bug fixes affecting daily use and two enhancements.

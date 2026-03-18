@@ -52,6 +52,10 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.5.1 — 2026-03-18
+
+Bug fixes: actions menu no longer hidden under the next item on break tasks (React portal fix), duplicate settings rows removed from the Calendars tab, Duration quick-picks moved to Schedule and redesigned as editable pill chips.
+
 ### v1.5.0 — 2026-03-18
 
 Bug fixes and enhancements: break edits now persist, actions menu no longer clipped on mobile, configurable duration quick-picks in Settings → Timer, task left-border colour now matches the tag colour consistently across list and clock.
