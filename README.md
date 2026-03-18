@@ -54,19 +54,19 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ### v1.5.3 — 2026-03-18
 
-Bug fixes: advanced mode now auto-enables all gated features on first use; actions menu hover states were invisible due to CSS variable scoping outside the React portal.
+Enabling Advanced mode for the first time now turns on all its features in one go. Task menu hover states now visible.
 
 ### v1.5.2 — 2026-03-18
 
-Bug fix: backlog no longer empties on mobile when a sync-triggered re-fetch runs before the E2EE key is ready.
+The backlog no longer appears empty on mobile during a sync.
 
 ### v1.5.1 — 2026-03-18
 
-Bug fixes: actions menu no longer hidden under the next item on break tasks (React portal fix), duplicate settings rows removed from the Calendars tab, Duration quick-picks moved to Schedule and redesigned as editable pill chips.
+Task menu no longer hidden behind other items on break tasks. Duration presets moved to Settings → Schedule and redesigned as editable chips. Duplicate settings options removed.
 
 ### v1.5.0 — 2026-03-18
 
-Bug fixes and enhancements: break edits now persist, actions menu no longer clipped on mobile, configurable duration quick-picks in Settings → Timer, task left-border colour now matches the tag colour consistently across list and clock.
+Editing breaks now saves correctly. Task menu no longer cut off on mobile. Duration presets are now customisable. Task colours now match their tag consistently across the list and clock.
 
 ### v1.4.0 — 2026-03-13
 

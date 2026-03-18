@@ -6,37 +6,33 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ### v1.5.3 — 2026-03-18
 
-- **Advanced mode auto-enables all features on first use**: turning on Advanced mode for the first time now enables all gated options (recurring tasks, backlog, day summary, Pomodoro timer) in one step. Later changes to individual options are respected — the auto-enable only fires once. A new `advancedModeInitialised` flag in settings tracks whether this has happened.
-- **Actions menu hover states now visible**: the three-dot menu is rendered via a React portal into `document.body`, placing it outside the `.task-list` CSS inheritance chain. Theme alias variables (`--tl-btn-hover-bg` etc.) were not resolving, making hover backgrounds transparent. The variables are now declared on the menu element itself. Button corner radius also raised from 3 px to 6 px to match the surrounding UI.
+- **Turning on Advanced mode now sets everything up at once**: when you enable Advanced mode for the first time, all the features it unlocks — recurring tasks, backlog, day summary, and the Pomodoro timer — turn on automatically. No need to enable each one individually. Any you turn off afterwards stay off.
+- **Task menu options now highlight correctly**: the … menu on each task now shows a clear background when you hover over an option. Previously the highlight was invisible, making the menu feel unresponsive.
 
 ---
 
 ### v1.5.2 — 2026-03-18
 
-- **Backlog no longer empties on mobile**: a sync-triggered re-fetch could blank the backlog if the E2EE key wasn't ready yet — all tasks would fail to decrypt and the list would be replaced with an empty result. The fetch now detects decryption errors and preserves the current state rather than overwriting it.
+- **Your backlog no longer disappears on mobile**: in some cases, syncing while the app was still loading could cause the backlog to appear empty. Your tasks were never lost — the backlog now holds its content rather than showing a blank list while the app catches up.
 
 ---
 
 ### v1.5.1 — 2026-03-18
 
-Bug fixes and settings polish.
-
-- **Actions menu no longer hidden under the next item on break tasks**: break items carry `opacity: 0.6`, which creates a CSS stacking context that confined the fixed-position menu. The menu is now rendered via a React portal into `document.body`, so it always appears on top regardless of the parent item's opacity.
-- **Duration quick-picks moved to Settings → Schedule**: these presets relate to how long tasks and breaks are, not to the Pomodoro timer — Schedule is the right home. The Timer tab is now Pomodoro-only, making its name accurate.
-- **Duration quick-picks redesigned as editable pill chips**: replaced the number-spinner inputs and separate +/− row buttons with rounded pill chips. Each pill contains a spinner-free inline number input; hover reveals a × to remove that slot; a dashed circle + adds a new one.
-- **Duplicate settings rows removed from Calendars tab**: Recurring tasks, Backlog, and Day time summary toggles were incorrectly appearing on both the Schedule and Calendars tabs. They now appear only under Schedule.
+- **Task menu no longer hidden behind other items**: the … menu on break tasks could appear underneath the task below it, making its options impossible to tap. It now always appears on top.
+- **Duration presets moved to a more logical home**: the quick-pick duration buttons (e.g. 25 min, 45 min) are now in Settings → Schedule, since they're about how long your tasks are rather than how the Pomodoro timer works. The Timer tab now contains only Pomodoro settings.
+- **Duration presets are now easier to edit**: preset durations appear as small rounded chips. Click a chip to type a new value; hover to reveal a × to remove it; click + to add another. Cleaner than the previous spinners and +/− buttons.
+- **Duplicate options removed from Settings**: a handful of toggles (recurring tasks, backlog, day summary) were appearing on both the Schedule and Calendars tabs. They now appear only under Schedule.
 
 ---
 
 ### v1.5.0 — 2026-03-18
 
-Four improvements: two bug fixes affecting daily use and two enhancements.
-
-- **Break edit now persists** (#47A): editing a break task (title, duration, fixed time) was silently ignored. `isBreak` is now tracked in local form state rather than read from the prop at submit time, making it resilient to any re-render between form open and submit.
-- **Actions menu no longer clipped on mobile** (#47B): the three-dot `…` menu now positions itself with `position: fixed` using coordinates from `getBoundingClientRect()`, so it is never clipped by the `overflow: hidden` container on the task list panel. Flip-upward logic prevents it going off the bottom of the screen.
-- **Configurable duration quick-picks** (#48): task and break duration presets are now editable in Settings → Timer. Add or remove slots (2–5 per row), with per-slot number inputs validated to 1–480 min for tasks and 1–120 min for breaks. Defaults remain `[15, 25, 30, 45, 60]` for tasks and `[5, 10, 15, 30]` for breaks. Syncs across devices.
-- **Task colour matches tag colour** (#49): the left-border accent on task list rows now derives its colour directly from the task's tag hue (via `tagHueMap`), exactly matching the clock-face arc colour and the tag pill colour. Backlog items get the same treatment. Untagged tasks fall back to the arc-order colour as before.
-- **Decryption errors handled gracefully** (#46 defensive fix): if one or more tasks cannot be decrypted (e.g. the key is not yet ready), those tasks are dropped individually rather than failing the entire fetch. A warning banner is shown in the task list and the count is logged to the console.
+- **Editing breaks now saves correctly**: changes to a break's title, duration, or start time were silently discarded when you saved. They now save as expected.
+- **Task menu no longer cut off on mobile**: the … menu on each task was sometimes clipped by the edge of the screen. It now positions itself correctly and flips upward if it would otherwise go off the bottom of the screen.
+- **Customisable duration presets**: the quick-pick duration buttons are now yours to edit in Settings. Change the values, add new ones, or remove the ones you never use. Your choices sync across devices.
+- **Task colour now matches its tag**: the coloured stripe on the left of each task row now uses exactly the same colour as the tag pill and the arc on the clock face. Everything belonging to a tag is the same shade, including items in the backlog.
+- **Occasional loading errors no longer hide all your tasks**: if a task can't be read while the app is starting up, it's skipped individually rather than causing the whole list to fail. A brief notice appears if any tasks were affected.
 
 ---
 
