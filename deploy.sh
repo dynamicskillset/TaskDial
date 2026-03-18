@@ -34,6 +34,7 @@ ssh "$VPS" "cd $REMOTE/server && npm install --omit=dev"
 
 echo "==> Deploying frontend..."
 rsync -az app/dist/ "$VPS:$REMOTE/frontend/"
+rsync -az app/dist/ "$VPS:/opt/ghost/sites/taskdial/"
 
 echo "==> Restarting server..."
 ssh "$VPS" "pm2 restart taskdial --update-env"
