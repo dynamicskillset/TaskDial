@@ -4,6 +4,13 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ---
 
+### v1.5.3 — 2026-03-18
+
+- **Advanced mode auto-enables all features on first use**: turning on Advanced mode for the first time now enables all gated options (recurring tasks, backlog, day summary, Pomodoro timer) in one step. Later changes to individual options are respected — the auto-enable only fires once.
+- **Actions menu hover states now visible**: the three-dot menu is rendered via a React portal into `document.body`, placing it outside the `.task-list` CSS inheritance chain. Theme alias variables (`--tl-btn-hover-bg` etc.) were not resolving, making hover backgrounds transparent. The variables are now declared on the menu element itself. Button corner radius also raised from 3 px to 6 px to match the surrounding UI.
+
+---
+
 ### v1.5.2 — 2026-03-18
 
 - **Backlog no longer empties on mobile**: a sync-triggered re-fetch could blank the backlog if the E2EE key wasn't ready yet — all tasks would fail to decrypt and the list would be replaced with an empty result. The fetch now detects decryption errors and preserves the current state rather than overwriting it.

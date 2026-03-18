@@ -52,6 +52,10 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.5.3 — 2026-03-18
+
+Bug fixes: advanced mode now auto-enables all gated features on first use; actions menu hover states were invisible due to CSS variable scoping outside the React portal.
+
 ### v1.5.2 — 2026-03-18
 
 Bug fix: backlog no longer empties on mobile when a sync-triggered re-fetch runs before the E2EE key is ready.

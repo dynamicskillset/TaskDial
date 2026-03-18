@@ -162,6 +162,17 @@ export function SettingsPanel({
       if (changes.advancedMode === false && (activeTab === 'calendars' || activeTab === 'timer')) {
         setActiveTab('look');
       }
+      // First time enabling Advanced mode: turn on all gated features (except clock position)
+      if (changes.advancedMode === true && !settings.advancedModeInitialised) {
+        changes = {
+          ...changes,
+          enableRecurringTasks: true,
+          enableBacklog: true,
+          showDaySummary: true,
+          showPomodoroTimer: true,
+          advancedModeInitialised: true,
+        };
+      }
       onSettingChange({ ...settings, ...changes });
     },
     [onSettingChange, settings, activeTab],

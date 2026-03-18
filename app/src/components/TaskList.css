@@ -449,6 +449,15 @@
 }
 
 .task-list__actions-menu {
+  /* Re-declare --tl-* aliases here so they resolve when the menu is portalled
+     into document.body (outside the .task-list inheritance chain). */
+  --tl-bg: var(--color-bg);
+  --tl-text: var(--color-text);
+  --tl-text-secondary: var(--color-text-secondary);
+  --tl-border: var(--color-border);
+  --tl-delete-color: var(--color-danger);
+  --tl-btn-hover-bg: var(--color-btn-hover-bg);
+
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
@@ -485,7 +494,7 @@
   background: none;
   color: var(--tl-text-secondary);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
@@ -531,14 +540,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: none;
   background: none;
   color: var(--tl-text-secondary);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 

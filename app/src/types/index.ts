@@ -74,6 +74,7 @@ export interface AppSettings {
   weekStartDay: 1 | 7;  // 1=Monday (default), 7=Sunday
   taskDurationPresets: number[];  // quick-pick buttons in task form, default [15, 25, 30, 45, 60]
   breakDurationPresets: number[]; // quick-pick buttons in break form, default [5, 10, 15, 30]
+  advancedModeInitialised: boolean; // true once the user has enabled Advanced mode at least once
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -101,4 +102,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   weekStartDay: 1,
   taskDurationPresets: [15, 25, 30, 45, 60],
   breakDurationPresets: [5, 10, 15, 30],
+  advancedModeInitialised: false,
 };
