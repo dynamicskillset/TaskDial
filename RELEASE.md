@@ -21,6 +21,7 @@ Follow this in order every time. Do not skip steps.
 - [ ] **README.md pruning rule**: when writing a DEFAULT (minor) release entry, remove all patch entries from the previous DEFAULT cycle. Keep only the most recent DEFAULT entry plus the current one as rolling history. Full detail always lives in CHANGELOG.md.
 - [ ] Run tests one final time: `cd app && npm test`
 - [ ] Commit everything: `git add -A && git commit -m "feat: vX.Y.Z — short description"`
+- [ ] **If a build-fix commit is needed after the main commit**: update CHANGELOG.md and README.md before that commit too — every commit that goes out must have docs that match it
 
 ## 4. Deploy
 

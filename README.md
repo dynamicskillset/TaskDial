@@ -68,38 +68,10 @@ Bug fixes: actions menu no longer hidden under the next item on break tasks (Rea
 
 Bug fixes and enhancements: break edits now persist, actions menu no longer clipped on mobile, configurable duration quick-picks in Settings → Timer, task left-border colour now matches the tag colour consistently across list and clock.
 
-### v1.4.2 — 2026-03-15
-
-Bug fixes: onboarding tooltip jump, week nav oversized hit area, week-start-day preference (Mon/Sun), calendar sync confirmation message.
-
-### v1.4.1 — 2026-03-15
-
-Bug fixes: clockface date on non-today views, calendar events disappearing on refresh or day navigation, task edit form using wrong date for conflict detection, theme background colour not updating, layout shift on view switch, tappable empty state, iCal guide link styling and expanded instructions.
-
 ### v1.4.0 — 2026-03-13
 
 - **Flash when time's up**: overrunning task arcs pulse on the clock; a toast lets you extend by 15 minutes, mark done, or dismiss. Browser notification fires once per task.
 - **Onboarding walkthrough**: five-step guided tour for new users, with a live demo clock. Replayable from Settings → Account.
-
-### v1.3.3 — 2026-03-13
-
-Bug fixes: mobile logouts, encrypted blobs on login, repeated desktop notifications, time removal not syncing, "What's new?" firing on patch releases, move-to submenu requiring two taps.
-
-### v1.3.2 — 2026-03-13
-
-- **Ellipsis actions menu**: task actions tucked behind a `…` button, keeping the task row cleaner.
-- **Task titles wrap**: long titles no longer overflow on narrow screens.
-- **Backlog tag filter**: works the same way as the main list filter.
-
-### v1.3.0 — 2026-03-11
-
-- **Password reset**: reset your password by email; resets the encryption key and revokes all sessions.
-- **Multi-use invite codes**: tokens can be used more than once, with optional limits and working revocation.
-- **Session stays alive after tab snooze**: auth token refreshes when a snoozed tab wakes up.
-- **Maintenance banner**: appears automatically when the server is briefly unreachable.
-- **"What's new?" banner**: shown once after each minor version update.
-- **Fixed time in basic mode**: available without enabling Advanced mode.
-- **Undo bar auto-dismisses**: disappears after 10 seconds of inactivity.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
