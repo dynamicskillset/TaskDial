@@ -11,7 +11,7 @@ import { usePomodoro } from './hooks/usePomodoro';
 import { useSync } from './hooks/useSync';
 import { scheduleTasks, findNonOverflowOrdering, type ScheduledTask } from './utils/scheduling';
 import { formatDuration, tagColor, tagBgColor, buildTagHueMap, tagColorFromHue, tagBgColorFromHue } from './utils/format';
-import { todayString, tomorrowString, getWeekMonday, weekDayDate, shiftDate } from './utils/scheduling';
+import { todayString, tomorrowString, getWeekMonday, weekDayDate, shiftDate, isWorkingDay, nearestWorkingDay } from './utils/scheduling';
 import { fetchCalendar, fetchTasks as apiFetchTasks, logInstallEvent, refreshToken } from './services/api';
 import { shouldShowWhatsNew } from './utils/whatsNew';
 import * as storage from './services/storage';
@@ -273,6 +273,19 @@ function App({ user, onLogout }: AppProps) {
     setSettings(s);
     debouncedPushSettings(s);
   }, [debouncedPushSettings]);
+
+  // Advanced mode nudge — shown once after the 5th real (non-break, non-demo) task
+  const realTaskCount = useMemo(
+    () => tasks.filter(t => !t.isBreak).length,
+    [tasks],
+  );
+  const showAdvancedNudge = !settings.advancedMode && !settings.advancedNudgeDismissed && realTaskCount >= 5 && !demoMode;
+
+  const handleDismissAdvancedNudge = useCallback(() => {
+    const updated = { ...settings, advancedNudgeDismissed: true };
+    setSettings(updated);
+    debouncedPushSettings(updated);
+  }, [settings, debouncedPushSettings]);
 
   // Auto-expand timer when running
   useEffect(() => {
@@ -931,26 +944,28 @@ function App({ user, onLogout }: AppProps) {
 
   const handleMoveAllToTomorrow = useCallback(async () => {
     const now = new Date().toISOString();
+    const workDays = settings.workingDays ?? [];
     const tomorrow = tomorrowString();
+    const targetDate = isWorkingDay(tomorrow, workDays) ? tomorrow : nearestWorkingDay(todayString(), workDays, 'next');
     const toMove = tasks.filter(t => !t.completed && !t.isBreak);
 
-    // Fetch tomorrow's tasks to find the right starting sortOrder
+    // Fetch target day's tasks to find the right starting sortOrder
     let baseSortOrder = 0;
     try {
-      const tomorrowTasks = await apiFetchTasks(tomorrow);
-      baseSortOrder = tomorrowTasks.length;
+      const targetTasks = await apiFetchTasks(targetDate);
+      baseSortOrder = targetTasks.length;
     } catch {
       // Offline: use a high base to avoid collisions
       baseSortOrder = 1000;
     }
 
     toMove.forEach((task, i) => {
-      const updated: Task = { ...task, date: tomorrow, sortOrder: baseSortOrder + i, updatedAt: now };
+      const updated: Task = { ...task, date: targetDate, sortOrder: baseSortOrder + i, updatedAt: now };
       pushTask('update', updated);
     });
     const moveIds = new Set(toMove.map(t => t.id));
     setTasks(prev => prev.filter(t => !moveIds.has(t.id)));
-  }, [tasks, pushTask]);
+  }, [tasks, settings.workingDays, pushTask]);
 
   // Pomodoro session tracking — only push new sessions
   const pushedSessionCount = useRef(0);
@@ -1609,6 +1624,11 @@ function App({ user, onLogout }: AppProps) {
                             isFirstVisit={isFirstVisit && !demoMode}
                             onTryDemo={enterDemoMode}
                             onAddTask={() => { setEditingTask(undefined); setShowForm(true); }}
+                            workingDays={settings.workingDays}
+                            advancedMode={settings.advancedMode}
+                            onOpenSettings={() => setShowSettings(true)}
+                            showAdvancedNudge={showAdvancedNudge}
+                            onDismissAdvancedNudge={handleDismissAdvancedNudge}
                           />
                         </div>
                       )}
@@ -1711,10 +1731,16 @@ function App({ user, onLogout }: AppProps) {
                   onReorder={handleReorder}
                   onReorderAll={handleReorderAll}
                   onSelectTask={setActiveTaskId}
+                  onRescheduleTask={handleRescheduleTask}
                   onMoveAllToTomorrow={handleMoveAllToTomorrow}
                   isFirstVisit={isFirstVisit && !demoMode}
                   onTryDemo={enterDemoMode}
                   onAddTask={() => setEditingTask(undefined)}
+                  workingDays={settings.workingDays}
+                  advancedMode={settings.advancedMode}
+                  onOpenSettings={() => setShowSettings(true)}
+                  showAdvancedNudge={showAdvancedNudge}
+                  onDismissAdvancedNudge={handleDismissAdvancedNudge}
                 />
               </div>
             </>

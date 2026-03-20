@@ -673,6 +673,7 @@ export function getDemoSettings(): AppSettings {
     taskDurationPresets: [15, 25, 30, 45, 60],
     breakDurationPresets: [5, 10, 15, 30],
     advancedModeInitialised: true,
+    advancedNudgeDismissed: false,
   };
 }
 

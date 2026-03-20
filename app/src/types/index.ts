@@ -75,6 +75,7 @@ export interface AppSettings {
   taskDurationPresets: number[];  // quick-pick buttons in task form, default [15, 25, 30, 45, 60]
   breakDurationPresets: number[]; // quick-pick buttons in break form, default [5, 10, 15, 30]
   advancedModeInitialised: boolean; // true once the user has enabled Advanced mode at least once
+  advancedNudgeDismissed: boolean; // true once the user has dismissed the "try advanced mode" nudge
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -103,4 +104,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   taskDurationPresets: [15, 25, 30, 45, 60],
   breakDurationPresets: [5, 10, 15, 30],
   advancedModeInitialised: false,
+  advancedNudgeDismissed: false,
 };

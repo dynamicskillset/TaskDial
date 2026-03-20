@@ -52,6 +52,10 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.7.0 — 2026-03-20
+
+"Next work day" button in the reschedule popover when tomorrow is a non-working day. Batch "move unfinished" also targets the next work day when tomorrow is a weekend or day off. Passive hint and one-time nudge to help new users find advanced mode.
+
 ### v1.6.0 — 2026-03-18
 
 Light mode is much easier to read: labels, placeholders, toggles, and buttons that were too faint are now clearly visible. Pomodoro break colours look right in light mode too. Several buttons are easier to tap on mobile. The welcome tour highlight now glides between steps instead of jumping.

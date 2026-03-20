@@ -4,6 +4,13 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ---
 
+### v1.7.0 — 2026-03-20
+
+- **"Next work day" reschedule option**: when tomorrow isn't one of your working days (e.g. it's Friday and your week ends there), the reschedule popover now shows a "Next work day" button alongside "Tomorrow", so you don't have to hunt for Monday with the date picker. The batch "Move N unfinished to tomorrow" button also skips the weekend automatically — it moves to the next working day instead.
+- **Advanced mode is now easier to discover**: a quiet link at the bottom of the task list ("Advanced mode unlocks more") opens Settings so you can see what's there. After you've added five tasks, a dismissable banner explains what advanced mode turns on.
+
+---
+
 ### v1.6.0 — 2026-03-18
 
 - **Light mode is easier to read**: several elements that were too faint to read comfortably have been made more visible. Toggle switches now have a clearly visible track. Duration and tag placeholders ("Task name...", "e.g. admin, deep work") are properly readable. Completed tasks are dimmed less aggressively. The breaks segment in the Day Breakdown bar is now visible. Duration preset chips and tag filter pills stand out from the page background. The "Add to Backlog" button has a visible border so it reads as a button.

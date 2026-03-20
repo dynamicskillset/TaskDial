@@ -38,10 +38,10 @@ app.use((_req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self'",
-      "style-src 'self' 'unsafe-inline'",   // app uses inline styles for dynamic colours
+      "script-src 'self' 'sha256-ZswfTY7H35rbv8WC7NXBoiC7WNu86vSzCDChNWwZZDM='", // hash covers Vite module-preload polyfill in built index.html
+      "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
       "img-src 'self' data:",
-      "font-src 'self'",
+      "font-src 'self' https://fonts.bunny.net",
       "connect-src 'self'",
       "worker-src 'self'",
       "manifest-src 'self'",

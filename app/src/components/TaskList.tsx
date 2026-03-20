@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, memo, type ReactNode
 import { createPortal } from 'react-dom';
 import type { Task } from '../types';
 import type { ScheduledTask } from '../utils/scheduling';
-import { tomorrowString, todayString } from '../utils/scheduling';
+import { tomorrowString, todayString, isWorkingDay, nearestWorkingDay } from '../utils/scheduling';
 import { formatDuration, tagColor, tagBgColor, tagColorFromHue, tagBgColorFromHue, taskColorFromHue } from '../utils/format';
 
 import './TaskList.css';
@@ -25,6 +25,11 @@ interface TaskListProps {
   isFirstVisit?: boolean;
   onTryDemo?: () => void;
   onAddTask?: () => void;
+  workingDays?: number[];
+  advancedMode?: boolean;
+  onOpenSettings?: () => void;
+  showAdvancedNudge?: boolean;
+  onDismissAdvancedNudge?: () => void;
 }
 
 // Compiled once at module load — avoids recompilation on every renderInline call
@@ -334,6 +339,11 @@ export default function TaskList({
   isFirstVisit,
   onTryDemo,
   onAddTask,
+  workingDays = [],
+  advancedMode,
+  onOpenSettings,
+  showAdvancedNudge,
+  onDismissAdvancedNudge,
 }: TaskListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -569,6 +579,12 @@ export default function TaskList({
                 autoFocus
                 onClick={() => { onRescheduleTask(actionsMenuTask.id, tomorrowString()); }}
               >Tomorrow</button>
+              {!isWorkingDay(tomorrowString(), workingDays) && (
+                <button
+                  className="task-list__reschedule-tomorrow"
+                  onClick={() => { onRescheduleTask(actionsMenuTask.id, nearestWorkingDay(todayString(), workingDays, 'next')); }}
+                >Next work day</button>
+              )}
               <input
                 type="date"
                 className="task-list__reschedule-date"
@@ -678,18 +694,41 @@ export default function TaskList({
     );
   }
 
+  const tomorrowIsWorkDay = isWorkingDay(tomorrowString(), workingDays);
+  const nextWorkDay = tomorrowIsWorkDay ? tomorrowString() : nearestWorkingDay(todayString(), workingDays, 'next');
+  const batchLabel = tomorrowIsWorkDay
+    ? `Move ${unfinishedCount} unfinished to tomorrow \u2192`
+    : `Move ${unfinishedCount} unfinished to next work day \u2192`;
+
   return (
     <div className="task-list">
       <ul ref={listRef} className="task-list__items" role="list" aria-label="Tasks — drag to reorder or use arrow buttons">
         {sortedTasks.map((task) => renderItem(task))}
       </ul>
+      {showAdvancedNudge && !advancedMode && (
+        <div className="task-list__advanced-nudge" role="status">
+          <span>Advanced mode unlocks recurring tasks, backlog, Pomodoro timer, and more.</span>
+          <div className="task-list__advanced-nudge-actions">
+            <button className="task-list__advanced-nudge-open" onClick={onOpenSettings}>Open Settings</button>
+            <button className="task-list__advanced-nudge-dismiss" onClick={onDismissAdvancedNudge} aria-label="Dismiss">✕</button>
+          </div>
+        </div>
+      )}
       {onMoveAllToTomorrow && unfinishedCount > 0 && (
         <div className="task-list__batch-actions">
           <button
             className="task-list__batch-btn"
             onClick={onMoveAllToTomorrow}
+            data-target-date={nextWorkDay}
           >
-            Move {unfinishedCount} unfinished to tomorrow &rarr;
+            {batchLabel}
+          </button>
+        </div>
+      )}
+      {!advancedMode && onOpenSettings && (
+        <div className="task-list__advanced-hint">
+          <button className="task-list__advanced-hint-btn" onClick={onOpenSettings}>
+            Advanced mode unlocks more
           </button>
         </div>
       )}
