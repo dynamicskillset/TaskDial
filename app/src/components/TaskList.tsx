@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, memo, type ReactNode
 import { createPortal } from 'react-dom';
 import type { Task } from '../types';
 import type { ScheduledTask } from '../utils/scheduling';
-import { tomorrowString, todayString, isWorkingDay, nearestWorkingDay } from '../utils/scheduling';
+import { tomorrowString, todayString, isWorkingDay, nearestWorkingDay, minutesToTime } from '../utils/scheduling';
 import { formatDuration, tagColor, tagBgColor, tagColorFromHue, tagBgColorFromHue, taskColorFromHue } from '../utils/format';
 
 import './TaskList.css';
@@ -25,6 +25,7 @@ interface TaskListProps {
   isFirstVisit?: boolean;
   onTryDemo?: () => void;
   onAddTask?: () => void;
+  use24Hour?: boolean;
   workingDays?: number[];
   advancedMode?: boolean;
   onOpenSettings?: () => void;
@@ -120,6 +121,8 @@ interface TaskItemProps {
   isDragOver: boolean;
   isDetailsExpanded: boolean;
   onToggleDetails: (taskId: string) => void;
+  use24Hour?: boolean;
+  onEditTask: (task: Task) => void;
   onToggleComplete: (taskId: string) => void;
   onToggleImportant: (taskId: string) => void;
   onSelectTask: (taskId: string) => void;
@@ -139,6 +142,8 @@ const TaskItem = memo(function TaskItem({
   isDragging,
   isDragOver,
   isDetailsExpanded,
+  use24Hour,
+  onEditTask,
   onToggleDetails,
   onToggleComplete,
   onToggleImportant,
@@ -188,17 +193,18 @@ const TaskItem = memo(function TaskItem({
       onDragEnd={onDragEnd}
       onDrop={(e) => onDrop(e, task.id)}
       onClick={() => onSelectTask(task.id)}
+      onDoubleClick={(e) => { e.stopPropagation(); onEditTask(task); }}
     >
-      {/* Drag handle (desktop only) */}
-      {!task.completed && !task.isBreak && (
-        <div className="task-list__drag-handle" aria-hidden="true">
+      {/* Drag handle (desktop only) — always rendered to keep checkbox alignment */}
+      <div className="task-list__drag-handle" aria-hidden="true">
+        {!task.completed && !task.isBreak && (
           <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
             <circle cx="3" cy="2.5" r="1.2" /><circle cx="7" cy="2.5" r="1.2" />
             <circle cx="3" cy="7" r="1.2" /><circle cx="7" cy="7" r="1.2" />
             <circle cx="3" cy="11.5" r="1.2" /><circle cx="7" cy="11.5" r="1.2" />
           </svg>
-        </div>
-      )}
+        )}
+      </div>
       {/* Checkbox */}
       <button
         className="task-list__checkbox"
@@ -206,6 +212,7 @@ const TaskItem = memo(function TaskItem({
           e.stopPropagation();
           onToggleComplete(task.id);
         }}
+        onDoubleClick={(e) => e.stopPropagation()}
         aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
         title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
       >
@@ -252,9 +259,13 @@ const TaskItem = memo(function TaskItem({
         </span>
         <span className="task-list__meta">
           <span className="task-list__duration">{formatDuration(task.durationMinutes)}</span>
-          {task.fixedStartTime && (
-            <span className="task-list__fixed-time">
-              @ {task.fixedStartTime}
+          {task.fixedStartTime ? (
+            <span className="task-list__meta-time task-list__meta-time--fixed">
+              @ {task.fixedStartTime}–{minutesToTime(task.scheduledEnd, use24Hour ?? true)}
+            </span>
+          ) : (
+            <span className="task-list__meta-time">
+              {minutesToTime(task.scheduledStart, use24Hour ?? true)}–{minutesToTime(task.scheduledEnd, use24Hour ?? true)}
             </span>
           )}
           {task.meetingConflict && !task.isBreak && (
@@ -339,6 +350,7 @@ export default function TaskList({
   isFirstVisit,
   onTryDemo,
   onAddTask,
+  use24Hour,
   workingDays = [],
   advancedMode,
   onOpenSettings,
@@ -668,6 +680,8 @@ export default function TaskList({
       isDragging={draggingId === task.id}
       isDragOver={dragOverId === task.id}
       isDetailsExpanded={expandedDetailsId === task.id}
+      use24Hour={use24Hour}
+      onEditTask={onEditTask}
       onToggleDetails={handleToggleDetails}
       onToggleComplete={onToggleComplete}
       onToggleImportant={onToggleImportant}

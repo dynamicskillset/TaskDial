@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import type { PomodoroState, CalendarEvent } from '../types';
 import type { ScheduledTask } from '../utils/scheduling';
 import { taskArcColor, taskColorFromHue } from '../utils/format';
@@ -365,6 +365,8 @@ const TaskArc = React.memo(function TaskArc({
   totalTasks,
   isActive,
   isTimedOut,
+  isFlashing,
+  flashKey,
   onTaskClick,
   tagHueMap,
 }: {
@@ -372,6 +374,8 @@ const TaskArc = React.memo(function TaskArc({
   totalTasks: number;
   isActive: boolean;
   isTimedOut: boolean;
+  isFlashing: boolean;
+  flashKey: number;
   onTaskClick: (id: string) => void;
   tagHueMap?: Map<string, number>;
 }) {
@@ -447,6 +451,10 @@ const TaskArc = React.memo(function TaskArc({
           className="clock-face__completed-pattern"
           style={{ color: fill }}
         />
+      )}
+      {/* Flash overlay on selection */}
+      {isFlashing && (
+        <path key={flashKey} d={d} className="clock-face__task-arc-flash" />
       )}
     </g>
   );
@@ -711,6 +719,19 @@ const ClockFace: React.FC<ClockFaceProps> = ({
       ? pomodoroState.currentTaskId
       : null;
 
+  // Flash the arc when activeTaskId changes — flashKey forces remount to restart animation on re-click
+  const [flashTaskId, setFlashTaskId] = useState<string | null>(null);
+  const [flashKey, setFlashKey] = useState(0);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!activeTaskId) return;
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    setFlashTaskId(activeTaskId);
+    setFlashKey(k => k + 1);
+    flashTimerRef.current = setTimeout(() => setFlashTaskId(null), 1500);
+    return () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); };
+  }, [activeTaskId]);
+
   // Precompute which events should suppress their buffer arc — avoids O(n²) work inside JSX
   const calendarArcs = useMemo(() => calendarEvents.map((event) => {
     const bufferEnd = event.endMinutes + meetingBufferMinutes;
@@ -777,6 +798,8 @@ const ClockFace: React.FC<ClockFaceProps> = ({
               slot.task.id === activePomodoroTaskId
             }
             isTimedOut={slot.task.id === timedOutTaskId}
+            isFlashing={slot.task.id === flashTaskId}
+            flashKey={flashKey}
             onTaskClick={onTaskClick}
           />
         ))}

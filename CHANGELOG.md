@@ -4,6 +4,15 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ---
 
+### v1.7.1 — 2026-03-23
+
+- **Clicking a task in the list now flashes its arc on the clock**: when you click a task, its segment on the clock face pulses white five times so you can immediately see which arc it corresponds to. Clicking again restarts the flash.
+- **Double-click a task to edit it**: you can now open the edit form by double-clicking anywhere on a task row, without needing to click the pencil icon.
+- **Tasks show their scheduled time**: each task in the list now shows the time slot it occupies — e.g. `09:00–09:25` — alongside the duration. Fixed-time tasks continue to show the pinned time in the accent colour.
+- **Checkboxes are now aligned consistently**: completed tasks were missing the drag-handle spacer, causing their checkboxes to sit a few pixels to the left of the others. Fixed.
+
+---
+
 ### v1.7.0 — 2026-03-20
 
 - **"Next work day" reschedule option**: when tomorrow isn't one of your working days (e.g. it's Friday and your week ends there), the reschedule popover now shows a "Next work day" button alongside "Tomorrow", so you don't have to hunt for Monday with the date picker. The batch "Move N unfinished to tomorrow" button also skips the weekend automatically — it moves to the next working day instead.

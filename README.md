@@ -52,6 +52,10 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.7.1 — 2026-03-23
+
+Clicking a task in the list flashes its arc on the clock. Double-click any task row to edit it. Tasks now show their scheduled time range (e.g. 09:00–09:25). Checkbox alignment fixed for completed tasks.
+
 ### v1.7.0 — 2026-03-20
 
 "Next work day" button in the reschedule popover when tomorrow is a non-working day. Batch "move unfinished" also targets the next work day when tomorrow is a weekend or day off. Passive hint and one-time nudge to help new users find advanced mode.

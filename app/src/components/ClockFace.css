@@ -256,6 +256,18 @@ g:focus-visible .clock-face__calendar-arc {
   }
 }
 
+/* Selection flash overlay */
+@keyframes arc-select-flash {
+  0%, 20%, 40%, 60%, 80%, 100% { opacity: 0; }
+  10%, 30%, 50%, 70%, 90%      { opacity: 0.8; }
+}
+
+.clock-face__task-arc-flash {
+  fill: white;
+  pointer-events: none;
+  animation: arc-select-flash 1.5s linear forwards;
+}
+
 /* Meeting conflict — dashed stroke */
 .clock-face__task-arc--conflict {
   stroke: var(--color-warning, hsl(40, 85%, 55%));
