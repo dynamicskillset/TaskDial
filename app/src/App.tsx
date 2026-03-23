@@ -1624,6 +1624,7 @@ function App({ user, onLogout }: AppProps) {
                             isFirstVisit={isFirstVisit && !demoMode}
                             onTryDemo={enterDemoMode}
                             onAddTask={() => { setEditingTask(undefined); setShowForm(true); }}
+                            use24Hour={settings.use24Hour}
                             workingDays={settings.workingDays}
                             advancedMode={settings.advancedMode}
                             onOpenSettings={() => setShowSettings(true)}
@@ -1736,6 +1737,7 @@ function App({ user, onLogout }: AppProps) {
                   isFirstVisit={isFirstVisit && !demoMode}
                   onTryDemo={enterDemoMode}
                   onAddTask={() => setEditingTask(undefined)}
+                  use24Hour={settings.use24Hour}
                   workingDays={settings.workingDays}
                   advancedMode={settings.advancedMode}
                   onOpenSettings={() => setShowSettings(true)}
