@@ -4,6 +4,12 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 
 ---
 
+### v1.7.2 — 2026-03-25
+
+- **Removing a tag from a task now sticks**: clearing the tag field and saving would silently reappear after the next sync. Fixed.
+
+---
+
 ### v1.7.1 — 2026-03-23
 
 - **Clicking a task in the list now flashes its arc on the clock**: when you click a task, its segment on the clock face pulses white five times so you can immediately see which arc it corresponds to. Clicking again restarts the flash.

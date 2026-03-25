@@ -1,6 +1,6 @@
 {
   "name": "taskdial-server",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "license": "AGPL-3.0-only",
   "description": "TaskDial sync server — visual time-planning app with Pomodoro timer",
   "main": "dist/index.js",
