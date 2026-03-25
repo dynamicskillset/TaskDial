@@ -424,6 +424,42 @@ export function SettingsPanel({
                 />
               </Row>
 
+              <Divider />
+
+              <Row label="Auto-break" hint="Automatically insert a break after a stretch of work">
+                <Toggle
+                  checked={settings.autoBreakEnabled}
+                  onChange={v => set({ autoBreakEnabled: v })}
+                  label="Auto-break"
+                />
+              </Row>
+              {settings.autoBreakEnabled && (
+                <>
+                  <Row label="Break after">
+                    <Stepper
+                      value={settings.autoBreakAfterMinutes}
+                      min={30}
+                      max={240}
+                      unit="min"
+                      label="Break after"
+                      onDec={() => set({ autoBreakAfterMinutes: Math.max(30, settings.autoBreakAfterMinutes - 15) })}
+                      onInc={() => set({ autoBreakAfterMinutes: Math.min(240, settings.autoBreakAfterMinutes + 15) })}
+                    />
+                  </Row>
+                  <Row label="Break duration">
+                    <Stepper
+                      value={settings.autoBreakDurationMinutes}
+                      min={5}
+                      max={60}
+                      unit="min"
+                      label="Break duration"
+                      onDec={() => set({ autoBreakDurationMinutes: Math.max(5, settings.autoBreakDurationMinutes - 5) })}
+                      onInc={() => set({ autoBreakDurationMinutes: Math.min(60, settings.autoBreakDurationMinutes + 5) })}
+                    />
+                  </Row>
+                </>
+              )}
+
               {settings.advancedMode && (
                 <>
                   <Divider />

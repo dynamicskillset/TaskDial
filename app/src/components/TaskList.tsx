@@ -176,6 +176,7 @@ const TaskItem = memo(function TaskItem({
         task.completed && 'task-list__item--completed',
         task.important && 'task-list__item--important',
         task.isBreak && 'task-list__item--break',
+        task.isAutoBreak && 'task-list__item--auto-break',
         isActive && 'task-list__item--active',
         isDragging && 'task-list__item--dragging',
         isDragOver && 'task-list__item--drag-over',
@@ -193,7 +194,7 @@ const TaskItem = memo(function TaskItem({
       onDragEnd={onDragEnd}
       onDrop={(e) => onDrop(e, task.id)}
       onClick={() => onSelectTask(task.id)}
-      onDoubleClick={(e) => { e.stopPropagation(); onEditTask(task); }}
+      onDoubleClick={(e) => { e.stopPropagation(); if (!task.isAutoBreak) onEditTask(task); }}
     >
       {/* Drag handle (desktop only) — always rendered to keep checkbox alignment */}
       <div className="task-list__drag-handle" aria-hidden="true">
@@ -205,28 +206,31 @@ const TaskItem = memo(function TaskItem({
           </svg>
         )}
       </div>
-      {/* Checkbox */}
-      <button
-        className="task-list__checkbox"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleComplete(task.id);
-        }}
-        onDoubleClick={(e) => e.stopPropagation()}
-        aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
-        title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
-      >
-        {task.completed ? (
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.15" />
-            <path className="task-list__checkmark-path" d="M5 9.5L7.5 12L13 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-        )}
-      </button>
+      {/* Checkbox — hidden for auto-breaks */}
+      {!task.isAutoBreak && (
+        <button
+          className="task-list__checkbox"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete(task.id);
+          }}
+          onDoubleClick={(e) => e.stopPropagation()}
+          aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
+          title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
+        >
+          {task.completed ? (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.15" />
+              <path className="task-list__checkmark-path" d="M5 9.5L7.5 12L13 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          )}
+        </button>
+      )}
+      {task.isAutoBreak && <div className="task-list__checkbox task-list__checkbox--placeholder" aria-hidden="true" />}
 
       {/* Task content */}
       <div className="task-list__content">
@@ -295,39 +299,43 @@ const TaskItem = memo(function TaskItem({
         )}
       </div>
 
-      {/* Important indicator */}
-      <button
-        className={`task-list__important-btn ${task.important ? 'task-list__important-btn--active' : ''}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleImportant(task.id);
-        }}
-        aria-label={task.important ? 'Remove importance' : 'Mark as important'}
-        title={task.important ? 'Remove importance' : 'Mark as important'}
-      >
-        !
-      </button>
-
-      {/* Actions — ellipsis trigger + popover menu */}
-      <div className="task-list__actions-wrapper">
+      {/* Important indicator — hidden for auto-breaks */}
+      {!task.isAutoBreak && (
         <button
-          className="task-list__actions-trigger"
+          className={`task-list__important-btn ${task.important ? 'task-list__important-btn--active' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
-            onToggleActionsMenu(task.id, e.currentTarget);
+            onToggleImportant(task.id);
           }}
-          aria-label="Task actions"
-          aria-expanded={isActionsMenuOpen}
-          aria-haspopup="true"
-          title="More actions"
+          aria-label={task.important ? 'Remove importance' : 'Mark as important'}
+          title={task.important ? 'Remove importance' : 'Mark as important'}
         >
-          <svg width="16" height="4" viewBox="0 0 16 4" fill="currentColor" aria-hidden="true">
-            <circle cx="2" cy="2" r="1.5" />
-            <circle cx="8" cy="2" r="1.5" />
-            <circle cx="14" cy="2" r="1.5" />
-          </svg>
+          !
         </button>
-      </div>
+      )}
+
+      {/* Actions — ellipsis trigger + popover menu; hidden for auto-breaks */}
+      {!task.isAutoBreak && (
+        <div className="task-list__actions-wrapper">
+          <button
+            className="task-list__actions-trigger"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleActionsMenu(task.id, e.currentTarget);
+            }}
+            aria-label="Task actions"
+            aria-expanded={isActionsMenuOpen}
+            aria-haspopup="true"
+            title="More actions"
+          >
+            <svg width="16" height="4" viewBox="0 0 16 4" fill="currentColor" aria-hidden="true">
+              <circle cx="2" cy="2" r="1.5" />
+              <circle cx="8" cy="2" r="1.5" />
+              <circle cx="14" cy="2" r="1.5" />
+            </svg>
+          </button>
+        </div>
+      )}
     </li>
   );
 });

@@ -449,10 +449,13 @@ function App({ user, onLogout }: AppProps) {
     d.setSeconds(0, 0);
     return d;
   }, [currentMinuteKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const autoBreakConfig = settings.autoBreakEnabled
+    ? { afterMinutes: settings.autoBreakAfterMinutes, durationMinutes: settings.autoBreakDurationMinutes }
+    : undefined;
   const scheduledTasks = useMemo(
-    () => scheduleTasks(tasks, settings.dayStartHour, settings.dayEndHour, currentTime, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday),
+    () => scheduleTasks(tasks, settings.dayStartHour, settings.dayEndHour, currentTime, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday, autoBreakConfig),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tasks, settings.dayStartHour, settings.dayEndHour, currentMinuteKey, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday]
+    [tasks, settings.dayStartHour, settings.dayEndHour, currentMinuteKey, settings.autoAdvance, calendarEvents, settings.meetingBufferMinutes, isToday, settings.autoBreakEnabled, settings.autoBreakAfterMinutes, settings.autoBreakDurationMinutes]
   );
 
   const daySummary = useMemo(() => {
@@ -553,11 +556,14 @@ function App({ user, onLogout }: AppProps) {
   // Colour map ensuring no two visible tags share a similar hue
   const tagHueMap = useMemo(() => buildTagHueMap(allIndividualTags), [allIndividualTags]);
 
-  // Filtered task list (apply tag filter if active)
-  const filteredTasks = useMemo(() =>
-    activeTagFilter ? tasksWithScheduleInfo.filter(t => t.tag === activeTagFilter) : tasksWithScheduleInfo,
-    [tasksWithScheduleInfo, activeTagFilter]
-  );
+  // Filtered task list (apply tag filter if active); interleave auto-breaks when no filter active
+  const filteredTasks = useMemo(() => {
+    const base = activeTagFilter ? tasksWithScheduleInfo.filter(t => t.tag === activeTagFilter) : tasksWithScheduleInfo;
+    if (activeTagFilter) return base;
+    const autoBreaks = scheduledTasks.filter(t => t.isAutoBreak);
+    if (autoBreaks.length === 0) return base;
+    return [...base, ...autoBreaks].sort((a, b) => a.scheduledStart - b.scheduledStart);
+  }, [tasksWithScheduleInfo, scheduledTasks, activeTagFilter]);
 
   // Task start notifications
   useTaskNotifications(scheduledTasks, currentTime, isToday, !demoMode);

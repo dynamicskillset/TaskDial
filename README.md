@@ -52,13 +52,9 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
-### v1.7.2 — 2026-03-25
+### v1.8.0 — 2026-03-25
 
-Removing a tag from a task now sticks; it was silently reappearing after sync.
-
-### v1.7.1 — 2026-03-23
-
-Clicking a task in the list flashes its arc on the clock. Double-click any task row to edit it. Tasks now show their scheduled time range (e.g. 09:00–09:25). Checkbox alignment fixed for completed tasks.
+Auto-break scheduling: enable it in Settings → Schedule and TaskDial will automatically insert a break after a configurable stretch of work (default: 10-minute break every 90 minutes). Auto-breaks appear in the task list and on the clock but can't be edited. Any manual break you add resets the counter.
 
 ### v1.7.0 — 2026-03-20
 

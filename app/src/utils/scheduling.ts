@@ -74,6 +74,7 @@ export interface ScheduledTask extends Task {
   scheduledEnd: number;   // minutes from midnight
   overflows?: boolean;       // pushed past day end
   meetingConflict?: string;  // summary of conflicting meeting
+  isAutoBreak?: boolean;     // synthetic break injected by scheduler, never persisted
 }
 
 /**
@@ -112,6 +113,7 @@ export function scheduleTasks(
   calendarEvents: CalendarEvent[] = [],
   meetingBufferMinutes: number = 0,
   isToday: boolean = true,
+  autoBreak?: { afterMinutes: number; durationMinutes: number },
 ): ScheduledTask[] {
   const dayStartMinutes = dayStartHour * 60;
   const dayEndMinutes = dayEndHour * 60;
@@ -179,19 +181,74 @@ export function scheduleTasks(
     .filter(t => !t.completed)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  for (const task of sortedFlex) {
-    // Find next available slot (restart check after each push to handle cascading overlaps)
-    let slotStart = cursor;
+  /** Find next free slot for a block of durationMinutes starting at or after fromMinutes. */
+  function findNextFreeSlot(fromMinutes: number, durationMinutes: number): number {
+    let slotStart = fromMinutes;
     let conflict = true;
     while (conflict) {
       conflict = false;
       for (const occ of occupied) {
-        if (slotStart < occ.end && slotStart + task.durationMinutes > occ.start) {
+        if (slotStart < occ.end && slotStart + durationMinutes > occ.start) {
           slotStart = occ.end;
           conflict = true;
           break;
         }
       }
+    }
+    return slotStart;
+  }
+
+  let workSinceBreak = 0;
+  let autoBreakCount = 0;
+
+  for (const task of sortedFlex) {
+    // Find next available slot for this task
+    let slotStart = findNextFreeSlot(cursor, task.durationMinutes);
+
+    if (task.isBreak) {
+      // Manual break → place it and reset counter
+      const overflows = slotStart + task.durationMinutes > dayEndMinutes;
+      const scheduled: ScheduledTask = {
+        ...task,
+        scheduledStart: slotStart,
+        scheduledEnd: slotStart + task.durationMinutes,
+        overflows: overflows || undefined,
+      };
+      scheduledFlexible.push(scheduled);
+      occupied.push({ start: slotStart, end: slotStart + task.durationMinutes });
+      occupied.sort((a, b) => a.start - b.start);
+      cursor = slotStart + task.durationMinutes;
+      workSinceBreak = 0;
+      continue;
+    }
+
+    // Check if an auto-break should be injected before this task
+    if (autoBreak && workSinceBreak > 0 && workSinceBreak + task.durationMinutes > autoBreak.afterMinutes) {
+      const breakSlot = findNextFreeSlot(cursor, autoBreak.durationMinutes);
+      const breakOverflows = breakSlot + autoBreak.durationMinutes > dayEndMinutes;
+      const syntheticBreak: ScheduledTask = {
+        id: `auto-break-${autoBreakCount++}`,
+        title: 'Break',
+        durationMinutes: autoBreak.durationMinutes,
+        completed: false,
+        important: false,
+        isBreak: true,
+        isAutoBreak: true,
+        sortOrder: -1,
+        date: '',
+        createdAt: '',
+        updatedAt: '',
+        scheduledStart: breakSlot,
+        scheduledEnd: breakSlot + autoBreak.durationMinutes,
+        overflows: breakOverflows || undefined,
+      };
+      scheduledFlexible.push(syntheticBreak);
+      occupied.push({ start: breakSlot, end: breakSlot + autoBreak.durationMinutes });
+      occupied.sort((a, b) => a.start - b.start);
+      cursor = breakSlot + autoBreak.durationMinutes;
+      workSinceBreak = 0;
+      // Re-find slot for actual task now that cursor has advanced
+      slotStart = findNextFreeSlot(cursor, task.durationMinutes);
     }
 
     // If task overflows past day end, mark it rather than clamping backwards
@@ -209,6 +266,7 @@ export function scheduleTasks(
     occupied.sort((a, b) => a.start - b.start);
 
     cursor = slotStart + task.durationMinutes;
+    workSinceBreak += task.durationMinutes;
   }
 
   return [...fixedTasks, ...scheduledFlexible].sort(

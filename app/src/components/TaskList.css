@@ -192,6 +192,16 @@
   display: none;
 }
 
+/* Auto-break placeholder (checkbox alignment) */
+.task-list__checkbox--placeholder {
+  pointer-events: none;
+}
+
+/* Auto-break — slightly more muted than manual breaks */
+.task-list__item--auto-break {
+  opacity: 0.45;
+}
+
 /* Completed */
 .task-list__item--completed {
   opacity: var(--tl-completed-opacity);

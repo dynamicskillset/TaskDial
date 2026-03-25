@@ -76,6 +76,9 @@ export interface AppSettings {
   breakDurationPresets: number[]; // quick-pick buttons in break form, default [5, 10, 15, 30]
   advancedModeInitialised: boolean; // true once the user has enabled Advanced mode at least once
   advancedNudgeDismissed: boolean; // true once the user has dismissed the "try advanced mode" nudge
+  autoBreakEnabled: boolean;
+  autoBreakAfterMinutes: number;   // work stretch before injecting a break
+  autoBreakDurationMinutes: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -105,4 +108,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   breakDurationPresets: [5, 10, 15, 30],
   advancedModeInitialised: false,
   advancedNudgeDismissed: false,
+  autoBreakEnabled: false,
+  autoBreakAfterMinutes: 90,
+  autoBreakDurationMinutes: 10,
 };

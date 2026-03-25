@@ -239,6 +239,91 @@ describe('scheduleTasks', () => {
 
 // ---
 
+describe('scheduleTasks — auto-break', () => {
+  const AUTO_BREAK = { afterMinutes: 60, durationMinutes: 10 };
+
+  it('no auto-break injected when autoBreak is undefined', () => {
+    const t1 = makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 });
+    const t2 = makeTask({ id: 't2', durationMinutes: 40, sortOrder: 1 });
+    const results = scheduleTasks([t1, t2], DAY_START, DAY_END, NOW, true, [], 0, false);
+    expect(results.every(r => !r.isAutoBreak)).toBe(true);
+    expect(results.length).toBe(2);
+  });
+
+  it('injects one auto-break between two tasks that together exceed the threshold', () => {
+    // threshold=60min; t1=40min + t2=40min → total 80min > 60min → break before t2
+    const t1 = makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 });
+    const t2 = makeTask({ id: 't2', durationMinutes: 40, sortOrder: 1 });
+    const results = scheduleTasks([t1, t2], DAY_START, DAY_END, NOW, true, [], 0, false, AUTO_BREAK);
+    const autoBreaks = results.filter(r => r.isAutoBreak);
+    expect(autoBreaks.length).toBe(1);
+    // Auto-break should be between t1 and t2
+    const t1Result = results.find(r => r.id === 't1')!;
+    const t2Result = results.find(r => r.id === 't2')!;
+    expect(autoBreaks[0].scheduledStart).toBe(t1Result.scheduledEnd);
+    expect(t2Result.scheduledStart).toBe(autoBreaks[0].scheduledEnd);
+  });
+
+  it('does not inject a break before the very first task (workSinceBreak must be > 0)', () => {
+    // Even if first task alone exceeds threshold, no break before it
+    const t1 = makeTask({ id: 't1', durationMinutes: 90, sortOrder: 0 });
+    const results = scheduleTasks([t1], DAY_START, DAY_END, NOW, true, [], 0, false, AUTO_BREAK);
+    const autoBreaks = results.filter(r => r.isAutoBreak);
+    expect(autoBreaks.length).toBe(0);
+  });
+
+  it('manual break resets the work counter — next auto-break measures from there', () => {
+    // t1(40min) + manualBreak → counter resets → t2(40min) → no auto-break
+    const t1 = makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 });
+    const manualBreak = makeTask({ id: 'mb', durationMinutes: 5, isBreak: true, sortOrder: 1 });
+    const t2 = makeTask({ id: 't2', durationMinutes: 40, sortOrder: 2 });
+    const results = scheduleTasks([t1, manualBreak, t2], DAY_START, DAY_END, NOW, true, [], 0, false, AUTO_BREAK);
+    const autoBreaks = results.filter(r => r.isAutoBreak);
+    // t1(40) + manual break → reset → t2(40): 40+40=80 > 60 but after reset counter is only 40 before t2
+    // workSinceBreak after t1=40, manual break resets to 0, t2: workSinceBreak=0+40=40 < 60 threshold → no auto-break
+    expect(autoBreaks.length).toBe(0);
+  });
+
+  it('injects multiple auto-breaks in a long sequence of tasks', () => {
+    // threshold=60min; 4×40min tasks:
+    //   after t1(40), before t2: 40+40=80>60 → break, reset
+    //   after t2(40), before t3: 40+40=80>60 → break, reset
+    //   after t3(40), before t4: 40+40=80>60 → break, reset
+    //   → 3 auto-breaks total
+    const tasks = [
+      makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 }),
+      makeTask({ id: 't2', durationMinutes: 40, sortOrder: 1 }),
+      makeTask({ id: 't3', durationMinutes: 40, sortOrder: 2 }),
+      makeTask({ id: 't4', durationMinutes: 40, sortOrder: 3 }),
+    ];
+    const results = scheduleTasks(tasks, DAY_START, DAY_END, NOW, true, [], 0, false, AUTO_BREAK);
+    const autoBreaks = results.filter(r => r.isAutoBreak);
+    expect(autoBreaks.length).toBe(3);
+  });
+
+  it('auto-break overflow is flagged when it pushes past day end', () => {
+    const lateNow = new Date('2026-01-01T17:10:00'); // 1030min
+    // t1=40min (1030–1070), then t2=40min → 40+40=80>60 → auto-break at 1070; ends 1080 = day end; t2 at 1080 overflows
+    const t1 = makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 });
+    const t2 = makeTask({ id: 't2', durationMinutes: 40, sortOrder: 1 });
+    const results = scheduleTasks([t1, t2], DAY_START, DAY_END, lateNow, true, [], 0, true, AUTO_BREAK);
+    const t2Result = results.find(r => r.id === 't2')!;
+    expect(t2Result.overflows).toBe(true);
+  });
+
+  it('auto-break items have isBreak=true and isAutoBreak=true', () => {
+    const t1 = makeTask({ id: 't1', durationMinutes: 40, sortOrder: 0 });
+    const t2 = makeTask({ id: 't2', durationMinutes: 40, sortOrder: 1 });
+    const results = scheduleTasks([t1, t2], DAY_START, DAY_END, NOW, true, [], 0, false, AUTO_BREAK);
+    const autoBreak = results.find(r => r.isAutoBreak)!;
+    expect(autoBreak.isBreak).toBe(true);
+    expect(autoBreak.isAutoBreak).toBe(true);
+    expect(autoBreak.durationMinutes).toBe(10);
+  });
+});
+
+// ---
+
 describe('findNonOverflowOrdering', () => {
   it('returns null when there is no overflow', () => {
     const task = makeTask({ id: 't1', durationMinutes: 30 });
