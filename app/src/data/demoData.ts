@@ -674,6 +674,9 @@ export function getDemoSettings(): AppSettings {
     breakDurationPresets: [5, 10, 15, 30],
     advancedModeInitialised: true,
     advancedNudgeDismissed: false,
+    autoBreakEnabled: false,
+    autoBreakAfterMinutes: 90,
+    autoBreakDurationMinutes: 10,
   };
 }
 

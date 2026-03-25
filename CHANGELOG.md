@@ -7,6 +7,7 @@ All notable changes to TaskDial are documented here. TaskDial uses [PrideVer](ht
 ### v1.8.0 — 2026-03-25
 
 - **Auto-break scheduling**: a new setting (Settings → Schedule → Auto-break) that automatically inserts a break into your schedule after a configurable stretch of work time. Set how long before a break appears (default 90 min) and how long the break lasts (default 10 min). Auto-breaks appear in both the task list and on the clock face, but cannot be edited, completed, or reordered — they're purely a scheduling aid. Any manual break you add resets the work counter. Turn it off and the auto-breaks disappear immediately.
+- **Build fix**: demo settings object updated to include the new auto-break fields.
 
 ---
 
