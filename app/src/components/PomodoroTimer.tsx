@@ -5,8 +5,6 @@ import './PomodoroTimer.css';
 interface PomodoroTimerProps {
   state: PomodoroState;
   onStart: (taskId?: string) => void;
-  onPause: () => void;
-  onResume: () => void;
   onSkip: () => void;
   onReset: () => void;
   currentTaskTitle?: string;
@@ -51,8 +49,6 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 export default function PomodoroTimer({
   state,
   onStart,
-  onPause,
-  onResume,
   onSkip,
   onReset,
   currentTaskTitle,
@@ -160,21 +156,13 @@ export default function PomodoroTimer({
           >
             Start
           </button>
-        ) : isRunning ? (
-          <button
-            className={`pomodoro-timer__btn pomodoro-timer__btn--primary pomodoro-timer__btn--primary--${type}`}
-            onClick={onPause}
-            aria-label="Pause timer"
-          >
-            Pause
-          </button>
         ) : (
           <button
             className={`pomodoro-timer__btn pomodoro-timer__btn--primary pomodoro-timer__btn--primary--${type}`}
-            onClick={onResume}
-            aria-label="Resume timer"
+            onClick={onReset}
+            aria-label="Abandon this Pomodoro and reset"
           >
-            Resume
+            Pause
           </button>
         )}
 
@@ -196,6 +184,19 @@ export default function PomodoroTimer({
           Reset
         </button>
       </div>
+
+      {type === 'work' && (
+        <p className="pomodoro-timer__note">
+          Pausing voids the Pomodoro — interruptions break focus.{' '}
+          <a
+            href="https://www.pomodorotechnique.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn more
+          </a>
+        </p>
+      )}
     </div>
   );
 }

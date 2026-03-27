@@ -1513,8 +1513,6 @@ function App({ user, onLogout }: AppProps) {
                               const override = task && task.durationMinutes < settings.workDuration ? task.durationMinutes : undefined;
                               pomodoro.start(taskId ?? undefined, override);
                             }}
-                            onPause={pomodoro.pause}
-                            onResume={pomodoro.resume}
                             onSkip={pomodoro.skip}
                             onReset={pomodoro.reset}
                             currentTaskTitle={tasks.find(t => t.id === activeTaskId)?.title}

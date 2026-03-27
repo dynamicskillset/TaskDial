@@ -252,6 +252,19 @@
   cursor: not-allowed;
 }
 
+.pomodoro-timer__note {
+  font-size: 0.75rem;
+  color: var(--pomo-text-secondary);
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+.pomodoro-timer__note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Evergreen accent is green — shift short break to teal so they don't clash */
 .scheme-evergreen .pomodoro-timer {
   --pomo-short-break: #8FBCBB;

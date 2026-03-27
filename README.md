@@ -52,6 +52,10 @@ TaskDial uses [PrideVer](https://pridever.org): `PROUD.DEFAULT.SHAME`
 
 ## Changelog
 
+### v1.8.1 — 2026-03-27
+
+Pausing the Pomodoro timer now resets it — interrupting a Pomodoro voids it by design. A note below the timer explains this and links to the Pomodoro Technique website.
+
 ### v1.8.0 — 2026-03-25
 
 Auto-break scheduling: enable it in Settings → Schedule and TaskDial will automatically insert a break after a configurable stretch of work (default: 10-minute break every 90 minutes). Auto-breaks appear in the task list and on the clock but can't be edited. Any manual break you add resets the counter.
