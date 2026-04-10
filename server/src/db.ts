@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
-const DB_PATH = path.join(__dirname, '..', 'chronotasker.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'chronotasker.db');
 
 let db: Database.Database;
 
